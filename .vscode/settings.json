@@ -1,0 +1,20 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/root/projects/UKAEA-Sygensys-develop/Startup/",
+            "binaryPath": "/root/projects/UKAEA-Sygensys-develop/Startup/Main.sh",
+            "stopAtEntry": false,
+            "binaryArgs": [
+                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit.cfg", "-s", "State1", "--perf"
+            ]
+        }
+    ],
+    "makefile.makefilePath": "./Makefile.x86-linux",
+    "makefile.preConfigureScript": "/root/projects/UKAEA-Sygensys-develop/Startup/pre-configure.sh",
+    "makefile.alwaysPreConfigure": true,
+    "files.associations": {
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
+    }
+}
