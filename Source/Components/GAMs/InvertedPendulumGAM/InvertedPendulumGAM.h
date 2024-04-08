@@ -137,7 +137,6 @@
 
 
    /* Mode 1 is Dual PID Demonstration Mode */
-
    #define PRIMARY_PROPORTIONAL_MODE_1 	300
    #define PRIMARY_INTEGRAL_MODE_1     	0.0
    #define PRIMARY_DERIVATIVE_MODE_1   	30
@@ -469,6 +468,8 @@ namespace MFI {
    } arm_pid_instance_a_f32;
 
 
+enum MOTOR_DIRECTION { FORWARD, BACKWARD };
+
 class InvertedPendulumGAM : public MARTe::GAM {
  public:
     CLASS_REGISTER_DECLARATION();
@@ -500,44 +501,52 @@ class InvertedPendulumGAM : public MARTe::GAM {
     //ADCSample prev_sample;
 
    //********************############### Input Signals #########################*************************************
-   MARTe::uint32 encoder_position_steps;
-   MARTe::uint32 rotor_position_steps;
+   MARTe::uint32* INPUT_encoder_position_steps;
+   MARTe::uint32* INPUT_rotor_position_steps;
+   MARTe::uint32* INPUT_L6474_Board_Pwm1Counter;
+   MARTe::uint32* INPUT_CYCCNT;
+   MARTe::int8* INPUT_IsReady;
    //********************########################################################*************************************
 
    //********************############### Out Signals #########################*************************************
    //MARTe::uint32 encoder_position_steps;
+
+      /* Control system output signal */
+   MARTe::float64* OUTPUT_rotor_control_target_steps;
+   MARTe::uint8* OUTPUT_gpioState;
+   MARTe::uint32* OUTPUT_L6474_Board_Pwm1Period;
    //********************########################################################*************************************
 
 
-    MARTe::uint32 count;
+   //  MARTe::uint32 count;
     
-    MARTe::uint32 input_data_rate;
+   //  MARTe::uint32 input_data_rate;
 
-    MARTe::uint32 output_data_rate;
+   //  MARTe::uint32 output_data_rate;
     
-    MARTe::uint16* in_adc1_data;
+   //  MARTe::uint16* in_adc1_data;
 
-    MARTe::uint16* in_adc2_data;
+   //  MARTe::uint16* in_adc2_data;
 
-    MARTe::uint32* in_adc_time_seconds;
+   //  MARTe::uint32* in_adc_time_seconds;
 
-    MARTe::uint32* in_adc_time_microseconds;
+   //  MARTe::uint32* in_adc_time_microseconds;
 
-    MARTe::uint8* in_validity;
+   //  MARTe::uint8* in_validity;
 
-    MARTe::uint32* out_count;
+   //  MARTe::uint32* out_count;
     
-    MARTe::uint16* out_adc1_data;
+   //  MARTe::uint16* out_adc1_data;
            
-    MARTe::uint16* out_adc2_data;
+   //  MARTe::uint16* out_adc2_data;
 
-    MARTe::uint32* out_adc_time_seconds;
+   //  MARTe::uint32* out_adc_time_seconds;
 
-    MARTe::uint32* out_adc_time_microseconds;
+   //  MARTe::uint32* out_adc_time_microseconds;
 
-    MARTe::uint8* out_validity;
+   //  MARTe::uint8* out_validity;
 
-   volatile uint16_t gLastError;
+   // volatile uint16_t gLastError;
    /* Private function prototypes -----------------------------------------------*/
    void read_float(uint32_t * RxBuffer_ReadIdx, uint32_t * RxBuffer_WriteIdx , uint32_t * readBytes, float *float_return);
    void Error_Handler(uint16_t error);
@@ -547,6 +556,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    void user_configuration(void);
    void Main_StepClockHandler();
    void apply_acceleration(float * acc, float* target_velocity_prescaled, float t_sample);
+   float InvertedPendulumGAM::L6474_Board_Pwm1PrescaleFreq( float freq );
 
    /* Acceleration control system variables */
    volatile uint32_t apply_acc_start_time;
@@ -567,9 +577,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    // char msg_pad[64];
    // char test_msg[128];
    
-
-
-   /* Control system output signal */
+     /* Control system output signal */
    float rotor_control_target_steps;
    float rotor_control_target_steps_curr;
    float rotor_control_target_steps_prev;

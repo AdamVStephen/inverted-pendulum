@@ -12,28 +12,25 @@ using namespace MARTe;
 namespace MFI {
 
 InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
-    count = 0u;
-    input_data_rate = 0u;
-    output_data_rate = 0u;
-    in_adc1_data = NULL_PTR(uint16*);
-    in_adc2_data = NULL_PTR(uint16*);
-    in_adc_time_seconds = NULL_PTR(uint32*);
-    in_adc_time_microseconds = NULL_PTR(uint32*);
-    in_validity = NULL_PTR(uint8*);
-    out_count = NULL_PTR(uint32*);
-    out_adc1_data = NULL_PTR(uint16*);
-    out_adc2_data = NULL_PTR(uint16*);
-    out_adc_time_seconds = NULL_PTR(uint32*);
-    out_adc_time_microseconds = NULL_PTR(uint32*);
-    out_validity = NULL_PTR(uint8*);
+
+   INPUT_encoder_position_steps  = NULL_PTR(uint32*);
+   INPUT_rotor_position_steps    = NULL_PTR(uint32*);
+   INPUT_L6474_Board_Pwm1Counter = NULL_PTR(uint32*);
+   INPUT_CYCCNT                  = NULL_PTR(uint32*);
+   INPUT_IsReady                 = NULL_PTR(int8*);
+
+   OUTPUT_rotor_control_target_steps    = NULL_PTR(float64*);
+   OUTPUT_gpioState                     = NULL_PTR(uint8*);
+   OUTPUT_L6474_Board_Pwm1Period        = NULL_PTR(uint32*);
+
 }
 
 InvertedPendulumGAM::~InvertedPendulumGAM() {
 
 }
 
-void show_error(){
-
+void InvertedPendulumGAM::show_error(){
+     REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 }
 
 void InvertedPendulumGAM::control_logic_Initialise() {
@@ -148,6 +145,7 @@ void InvertedPendulumGAM::control_logic_Initialise() {
 	current_error_rotor_steps = (float*)malloc(sizeof(float));
 	if (current_error_rotor_steps == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
+		show_error();
 	}
 	sample_period = (float*)malloc(sizeof(float));
 	if (sample_period == NULL) {
@@ -621,7 +619,7 @@ void InvertedPendulumGAM::control_logic_Initialise_interactive(){
 
     cycle_count = CYCLE_LIMIT;
     i = 0;
-    rotor_position_steps = 0;
+    //rotor_position_steps = 0;
     rotor_position_steps_prev = 0;
     rotor_position_filter_steps = 0;
     rotor_position_filter_steps_prev = 0;
@@ -872,6 +870,11 @@ void InvertedPendulumGAM::control_logic() {
         *
         */
 
+   MARTe::uint32 encoder_position_steps  = *INPUT_encoder_position_steps;
+   MARTe::uint32 rotor_position_steps    = *INPUT_rotor_position_steps;
+   MARTe::uint32 L6474_Board_Pwm1Counter = *INPUT_L6474_Board_Pwm1Counter;
+   MARTe::uint32 CYCCNT                  = *INPUT_CYCCNT;
+
     if (enable_swing_up == 1 && i == SWING_UP_CONTROL_CONFIG_DELAY && enable_angle_cal == 0){
         PID_Rotor.Kp = init_r_p_gain;
         PID_Rotor.Ki = init_r_i_gain;
@@ -987,48 +990,48 @@ void InvertedPendulumGAM::control_logic() {
 
     //##################TO REVISIT ##################################
     // ret = encoder_position_read(&encoder_position_steps, encoder_position_init, &htim3);
-    if (select_suspended_mode == 0) {
-        encoder_position = encoder_position_steps - encoder_position_down - (int)(180 * angle_scale);
-        encoder_position = encoder_position - encoder_position_offset;
-    }
-    if (select_suspended_mode == 1) {
-        encoder_position = encoder_position_steps - encoder_position_down;
-        encoder_position = encoder_position - encoder_position_offset;
-    }
+    // if (select_suspended_mode == 0) {
+    //     encoder_position = encoder_position_steps - encoder_position_down - (int)(180 * angle_scale);
+    //     encoder_position = encoder_position - encoder_position_offset;
+    // }
+    // if (select_suspended_mode == 1) {
+    //     encoder_position = encoder_position_steps - encoder_position_down;
+    //     encoder_position = encoder_position - encoder_position_offset;
+    // }
 
     /*  Detect pendulum position excursion exceeding limits and exit */
 
-    if(select_suspended_mode == 0){
-        if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) > ENCODER_POSITION_POSITIVE_LIMIT) {
-            sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
-            show_error();
-            //##################TO REVISIT QUIT HERE##################################
-            //break;
-        }
-        if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) < ENCODER_POSITION_NEGATIVE_LIMIT) {
-            sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
-            show_error();
-            //##################TO REVISIT QUIT HERE##################################
-            //break;
-        }
+    // if(select_suspended_mode == 0){
+    //     if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) > ENCODER_POSITION_POSITIVE_LIMIT) {
+    //         sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
+    //         show_error();
+    //         //##################TO REVISIT QUIT HERE##################################
+    //         //break;
+    //     }
+    //     if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) < ENCODER_POSITION_NEGATIVE_LIMIT) {
+    //         sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
+    //         show_error();
+    //         //##################TO REVISIT QUIT HERE##################################
+    //         //break;
+    //     }
 
-    }
+    // }
 
     /* Detect rotor position excursion exceeding limits and exit */
 
-    if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
-        show_error();
-        //##################TO REVISIT QUIT HERE##################################
-        //break;
-    }
+    // if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
+    //     sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+    //     show_error();
+    //     //##################TO REVISIT QUIT HERE##################################
+    //     //break;
+    // }
 
-    if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
-        show_error();
-        //##################TO REVISIT QUIT HERE##################################
-        //break;
-    }
+    // if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
+    //     sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+    //     show_error();
+    //     //##################TO REVISIT QUIT HERE##################################
+    //     //break;
+    // }
 
     /*
         * Encoder Angle Error Compensation
@@ -1588,7 +1591,7 @@ void InvertedPendulumGAM::control_logic() {
 
     if (rotor_damping_coefficient != 0 || rotor_natural_frequency != 0){
 
-            rotor_control_target_steps_filter_2 = c0*rotor_control_target_steps + c1*rotor_control_target_steps_prev
+            rotor_control_target_steps_filter_2 = c0* rotor_control_target_steps + c1* rotor_control_target_steps_prev
                     + c2*rotor_control_target_steps_prev_prev + c3*rotor_control_target_steps_filter_prev_2
                     + c4*rotor_control_target_steps_filter_prev_prev_2;
 
@@ -1598,7 +1601,7 @@ void InvertedPendulumGAM::control_logic() {
     }
 
     if ((enable_rotor_plant_design == 2 )){
-        rotor_control_target_steps_filter_2 = iir_0_r*rotor_control_target_steps + iir_1_r*rotor_control_target_steps_prev
+        rotor_control_target_steps_filter_2 = iir_0_r* rotor_control_target_steps + iir_1_r*rotor_control_target_steps_prev
                 - iir_2_r*rotor_control_target_steps_filter_prev_2;
         rotor_control_target_steps_filter_prev_2 = rotor_control_target_steps_filter_2;
     }
@@ -1614,21 +1617,22 @@ void InvertedPendulumGAM::control_logic() {
     rotor_position_command_steps_prev = rotor_position_command_steps;
 
     //##################TO REVISIT HARWARE CALL TO TAKE ACTION##################################
-    // if (ACCEL_CONTROL == 1) {
-    //     if (enable_rotor_plant_design != 0){
-    //         rotor_control_target_steps_filter_2 = rotor_plant_gain*rotor_control_target_steps_filter_2;
-    //         apply_acceleration(&rotor_control_target_steps_filter_2, &target_velocity_prescaled, Tsample);
-    //     /* Applies if Rotor Gain defined */
-    //     } else if (enable_rotor_plant_gain_design == 1){
-    //         rotor_control_target_steps_gain = rotor_plant_gain * rotor_control_target_steps;
-    //         apply_acceleration(&rotor_control_target_steps_gain, &target_velocity_prescaled, Tsample);
-    //     /* Applies if no Rotor Design is selected */
-    //     } else {
-    //         apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
-    //     }
-    // } else {
-    //     BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
-    // }
+    if (ACCEL_CONTROL == 1) {
+        if (enable_rotor_plant_design != 0){
+            rotor_control_target_steps_filter_2 = rotor_plant_gain*rotor_control_target_steps_filter_2;
+            apply_acceleration(&rotor_control_target_steps_filter_2, &target_velocity_prescaled, Tsample);
+        /* Applies if Rotor Gain defined */
+        } else if (enable_rotor_plant_gain_design == 1){
+            rotor_control_target_steps_gain = rotor_plant_gain * rotor_control_target_steps;
+            apply_acceleration(&rotor_control_target_steps_gain, &target_velocity_prescaled, Tsample);
+        /* Applies if no Rotor Design is selected */
+        } else {
+            apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
+        }
+    } else {
+        *OUTPUT_rotor_control_target_steps = rotor_control_target_steps/2;
+        //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
+    }
 
     /*
         * *************************************************************************************************
@@ -1826,9 +1830,115 @@ void InvertedPendulumGAM::control_logic() {
 		
 }
 
+
+float InvertedPendulumGAM::L6474_Board_Pwm1PrescaleFreq( float freq ){
+
+    const int BSP_MOTOR_CONTROL_BOARD_PWM1_FREQ_RESCALER = 2; // value : 2
+    const int TIMER_PRESCALER = 1024; //value: 1024
+
+    return TIMER_PRESCALER * BSP_MOTOR_CONTROL_BOARD_PWM1_FREQ_RESCALER * freq;
+}
+
+void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocity_prescaled, float t_sample) {
+	/*
+	 *  Stepper motor acceleration, speed, direction and position control developed by Ryan Nemiroff
+	 */
+
+	uint32_t current_pwm_period_local = current_pwm_period;
+	uint32_t desired_pwm_period_local = desired_pwm_period;
+
+	/*
+	 * Add time reporting
+	 */
+
+	apply_acc_start_time = *INPUT_CYCCNT;
+
+     
+	MOTOR_DIRECTION old_dir = *target_velocity_prescaled > 0 ? FORWARD : BACKWARD;
+
+	if (old_dir == FORWARD) {
+		if (*acc > MAXIMUM_ACCELERATION) {
+			*acc = MAXIMUM_ACCELERATION;
+		} else if (*acc < -MAXIMUM_DECELERATION) {
+			*acc = -MAXIMUM_DECELERATION;
+		}
+	} else {
+		if (*acc < -MAXIMUM_ACCELERATION) {
+			*acc = -MAXIMUM_ACCELERATION;
+		} else if (*acc > MAXIMUM_DECELERATION) {
+			*acc = MAXIMUM_DECELERATION;
+		}	
+	}
+
+	*target_velocity_prescaled += L6474_Board_Pwm1PrescaleFreq(*acc) * t_sample;
+	MOTOR_DIRECTION new_dir = *target_velocity_prescaled > 0 ? FORWARD : BACKWARD;
+
+	if (*target_velocity_prescaled > L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED)) {
+		*target_velocity_prescaled = L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED);
+	} else if (*target_velocity_prescaled < -L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED)) {
+		*target_velocity_prescaled = -L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED);
+	}
+
+	float speed_prescaled;
+	if (new_dir == FORWARD ) {
+		speed_prescaled = *target_velocity_prescaled;
+	} else {
+		speed_prescaled = *target_velocity_prescaled * -1;
+		if (speed_prescaled == 0) speed_prescaled = 0; // convert negative 0 to positive 0
+	}
+
+
+	uint32_t effective_pwm_period = desired_pwm_period_local;
+
+	float desired_pwm_period_float = roundf(RCC_SYS_CLOCK_FREQ / speed_prescaled);
+	if (!(desired_pwm_period_float < 4294967296.0f)) {
+		desired_pwm_period_local = UINT_MAX;
+	} else {
+		desired_pwm_period_local = (uint32_t)(desired_pwm_period_float);
+	}
+
+    //******************set OUTPUT
+	if (old_dir != new_dir) {
+		*OUTPUT_gpioState = new_dir; 
+	}
+
+	if (current_pwm_period_local != 0) {
+		uint32_t pwm_count = *INPUT_L6474_Board_Pwm1Counter;
+		uint32_t pwm_time_left = current_pwm_period_local - pwm_count;
+		if (pwm_time_left > PWM_COUNT_SAFETY_MARGIN) {
+			if (old_dir != new_dir) {
+				// pwm_time_left = effective_pwm_period - pwm_time_left; // One method for assignment of PWM period during switching directions. This has the effect of additional discrete step noise.
+				pwm_time_left = effective_pwm_period; // Second method for assignment of PWM period during switching directions. This shows reduced discrete step noise.
+			}
+
+			uint32_t new_pwm_time_left = ((uint64_t) pwm_time_left * desired_pwm_period_local) / effective_pwm_period;
+			if (new_pwm_time_left != pwm_time_left) {
+				if (new_pwm_time_left < PWM_COUNT_SAFETY_MARGIN) {
+					new_pwm_time_left = PWM_COUNT_SAFETY_MARGIN;
+				}
+				current_pwm_period_local = pwm_count + new_pwm_time_left;
+				if (current_pwm_period_local < pwm_count) {
+					current_pwm_period_local = UINT_MAX;
+				}
+
+				*OUTPUT_L6474_Board_Pwm1Period = current_pwm_period_local;
+				current_pwm_period = current_pwm_period_local;
+			}
+		}
+	} else {
+		*OUTPUT_L6474_Board_Pwm1Period = desired_pwm_period_local;
+		current_pwm_period = desired_pwm_period_local;
+	}
+
+	desired_pwm_period = desired_pwm_period_local;
+
+}
+
 bool InvertedPendulumGAM::Initialise(MARTe::StructuredDataI & data) {
     bool ok = GAM::Initialise(data);
 
+    control_logic_Initialise();
+    control_logic_Initialise_interactive();
     // if (ok) {
     //     ok = data.Read("InputDataRate", input_data_rate);
     //     if (!ok) {
@@ -1850,108 +1960,86 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfInputSignals = GetNumberOfInputSignals();
-        ok = (nOfInputSignals == 5u); // Will need to be changed if any input signals are added or removed
+        ok = (nOfInputSignals == 4u); // Will need to be changed if any input signals are added or removed
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 5", gam_name.Buffer());
+            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 4", gam_name.Buffer());
         }
     } 
     uint32 signalIdx;
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADC1Data", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "IsReady", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
         if (ok) {
-            in_adc1_data = (uint16*) GetInputSignalMemory(signalIdx);
+            INPUT_IsReady = (int8*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal ADCTime");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal IsReady");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADC2Data", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
         if (ok) {
-            in_adc2_data = (uint16*) GetInputSignalMemory(signalIdx);
+            INPUT_encoder_position_steps = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal ADCTime");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal encoder_position_steps");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADCUTCUnixSeconds", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
         if (ok) {
-            in_adc_time_seconds = (uint32*) GetInputSignalMemory(signalIdx);
+            INPUT_rotor_position_steps = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal ADCUTCUnixSeconds");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal rotor_position_steps ");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADCUTCMicroseconds", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "L6474_Board_Pwm1Counter", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
         if (ok) {
-            in_adc_time_microseconds = (uint32*) GetInputSignalMemory(signalIdx);
+            INPUT_L6474_Board_Pwm1Counter = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal ADCUTCMicroseconds");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal L6474_Board_Pwm1Counter ");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "Validity", InputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "CYCCNT", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
         if (ok) {
-            in_validity = (uint8*) GetInputSignalMemory(signalIdx);
+            INPUT_CYCCNT = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal Validity");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal CYCCNT ");
         }
     }
 
+
     if (ok) {
         uint32 nOfOutputSignals = GetNumberOfOutputSignals();
-        ok = (nOfOutputSignals == 6u); // Will need to be changed if any output signals are added or removed
+        ok = (nOfOutputSignals == 3u); // Will need to be changed if any output signals are added or removed
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of output signals must be 6", gam_name.Buffer());
+            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of output signals must be 3", gam_name.Buffer());
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "Count", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            out_count = (uint32*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_rotor_control_target_steps = (float64*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal Count");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal rotor_control_target_steps");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADC1Data", OutputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "gpioState", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            out_adc1_data = (uint16*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_gpioState = (uint8*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal ADC1Data");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal gpioState");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADC2Data", OutputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "L6474_Board_Pwm1Period", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            out_adc2_data = (uint16*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_L6474_Board_Pwm1Period = (uint32*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal ADC2Data");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal L6474_Board_Pwm1Period");
         }
     }
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADCUTCUnixSeconds", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            out_adc_time_seconds = (uint32*) GetOutputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal ADCUTCUnixSeconds");
-        }
-    }
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "ADCUTCMicroseconds", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            out_adc_time_microseconds = (uint32*) GetOutputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal ADCUTCMicroseconds");
-        }
-    }
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "Validity", OutputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            out_validity = (uint8*) GetOutputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal Validity");
-        }
-    }
+    
 
     return ok;
 }
@@ -1961,8 +2049,7 @@ bool InvertedPendulumGAM::Setup() {
  * PID Controller with low pass filter operating on derivative component
  */
 
-void InvertedPendulumGAM::pid_filter_control_execute(arm_pid_instance_a_f32 *PID, float * current_error,
-		float * sample_period, float * Deriv_Filt) {
+void InvertedPendulumGAM::pid_filter_control_execute(arm_pid_instance_a_f32 *PID, float * current_error, float * sample_period, float * Deriv_Filt) {
 
 		float int_term, diff, diff_filt;
 
@@ -1999,8 +2086,7 @@ void InvertedPendulumGAM::pid_filter_control_execute(arm_pid_instance_a_f32 *PID
  * Mode assignments may be user configured below
  */
 
-void InvertedPendulumGAM::assign_mode_1(arm_pid_instance_a_f32 *PID_Pend,
-		arm_pid_instance_a_f32 *PID_Rotor){
+void InvertedPendulumGAM::assign_mode_1(arm_pid_instance_a_f32 *PID_Pend, arm_pid_instance_a_f32 *PID_Rotor){
 	select_suspended_mode = 0;
 	proportional = PRIMARY_PROPORTIONAL_MODE_1;
 	integral = PRIMARY_INTEGRAL_MODE_1;
@@ -2019,8 +2105,7 @@ void InvertedPendulumGAM::assign_mode_1(arm_pid_instance_a_f32 *PID_Pend,
 	//L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
 }
 
-void InvertedPendulumGAM::assign_mode_2(arm_pid_instance_a_f32 *PID_Pend,
-		arm_pid_instance_a_f32 *PID_Rotor){
+void InvertedPendulumGAM::assign_mode_2(arm_pid_instance_a_f32 *PID_Pend, arm_pid_instance_a_f32 *PID_Rotor){
 	select_suspended_mode = 0;
 	proportional = PRIMARY_PROPORTIONAL_MODE_2;
 	integral = PRIMARY_INTEGRAL_MODE_2;
@@ -2039,8 +2124,7 @@ void InvertedPendulumGAM::assign_mode_2(arm_pid_instance_a_f32 *PID_Pend,
 	//L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
 }
 
-void InvertedPendulumGAM::assign_mode_3(arm_pid_instance_a_f32 *PID_Pend,
-		arm_pid_instance_a_f32 *PID_Rotor){
+void InvertedPendulumGAM::assign_mode_3(arm_pid_instance_a_f32 *PID_Pend, arm_pid_instance_a_f32 *PID_Rotor){
 	select_suspended_mode = 0;
 	proportional = PRIMARY_PROPORTIONAL_MODE_3;
 	integral = PRIMARY_INTEGRAL_MODE_3;
@@ -2061,28 +2145,9 @@ void InvertedPendulumGAM::assign_mode_3(arm_pid_instance_a_f32 *PID_Pend,
 
 
 bool InvertedPendulumGAM::Execute() {
-    *out_validity = 0u;
-    
-    if (*in_validity == 1u) {
-        // ADCSample sample(*in_adc1_data, *in_adc2_data, 
-        //                  *in_adc_time_seconds, *in_adc_time_microseconds);
 
-        // uint64 t = get_last_resampling_time(sample, output_data_rate);
-        // if (prev_sample.valid && time_is_between(t, prev_sample, sample)) {
-        //     ADCSample interpolated_sample = interpolate(prev_sample, sample, t);
-
-        //     count++;
-        //     *out_adc1_data = interpolated_sample.adc1_data;
-        //     *out_adc2_data = interpolated_sample.adc2_data;
-        //     *out_adc_time_seconds = interpolated_sample.seconds();
-        //     *out_adc_time_microseconds = interpolated_sample.microseconds();
-        //     *out_validity = 1u;
-        //     *out_count = count;
-        // }       
-        
-        // prev_sample = sample;
-    }
-
+    if( *INPUT_IsReady == 1)
+        control_logic();
     return true;
 }
 
