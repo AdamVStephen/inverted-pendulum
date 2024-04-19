@@ -1001,37 +1001,37 @@ void InvertedPendulumGAM::control_logic() {
 
     /*  Detect pendulum position excursion exceeding limits and exit */
 
-    // if(select_suspended_mode == 0){
-    //     if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) > ENCODER_POSITION_POSITIVE_LIMIT) {
-    //         sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
-    //         show_error();
-    //         //##################TO REVISIT QUIT HERE##################################
-    //         //break;
-    //     }
-    //     if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) < ENCODER_POSITION_NEGATIVE_LIMIT) {
-    //         sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
-    //         show_error();
-    //         //##################TO REVISIT QUIT HERE##################################
-    //         //break;
-    //     }
+    if(select_suspended_mode == 0){
+        if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) > ENCODER_POSITION_POSITIVE_LIMIT) {
+            sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
+            show_error();
+            //##################TO REVISIT QUIT HERE##################################
+            //break;
+        }
+        if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) < ENCODER_POSITION_NEGATIVE_LIMIT) {
+            sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
+            show_error();
+            //##################TO REVISIT QUIT HERE##################################
+            //break;
+        }
 
-    // }
+    }
 
     /* Detect rotor position excursion exceeding limits and exit */
 
-    // if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-    //     sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
-    //     show_error();
-    //     //##################TO REVISIT QUIT HERE##################################
-    //     //break;
-    // }
+    if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
+        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+        show_error();
+        //##################TO REVISIT QUIT HERE##################################
+        //break;
+    }
 
-    // if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-    //     sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
-    //     show_error();
-    //     //##################TO REVISIT QUIT HERE##################################
-    //     //break;
-    // }
+    if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
+        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+        show_error();
+        //##################TO REVISIT QUIT HERE##################################
+        //break;
+    }
 
     /*
         * Encoder Angle Error Compensation
@@ -1700,11 +1700,11 @@ void InvertedPendulumGAM::control_logic() {
 
         if (Tsample <= 0.00125) { // 1/800Hz = 0.00125s
             /* High speed sampling mode data reporting for 800 Hz mode */
-            sprintf(msg_display, "%i\t%lu\r\n", (int)reference_tracking_command, current_pwm_period);
+            sprintf(msg_display, "%i\t%i\r\n", (int)reference_tracking_command, current_pwm_period);
             show_error();
         } else {
             /* High speed sampling mode data reporting for 500 Hz mode with acceleration contol system data */
-            sprintf(msg_display, "%i\t%i\t%i\t%lu\t%lu\t%lu\r\n",
+            sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\r\n",
                     (int)reference_tracking_command, (int)(roundf(rotor_control_target_steps/10)),(int)(rotor_position_command_steps),
                     current_pwm_period, desired_pwm_period/10000,
                     (clock_int_time/100000));

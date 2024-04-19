@@ -43,8 +43,12 @@ STM32OutSignals::STM32OutSignals():
 }
 
 STM32InSignals::STM32InSignals():
-                          dac1_data(0u),
-                          dac2_data(0u) {
+                        control_target_steps(0u),
+                         gpioState(0u),
+                         Pwm1Period(0u)
+                        //   dac1_data(0u),
+                        //   dac2_data(0u) 
+{
 
 }
 
@@ -147,7 +151,7 @@ bool STM32::Synchronise() {
     return true;
 }
 
-bool STM32::AllocateMemory() {
+bool STM32::AllocateMemory() { 
     return true;
 }
 
@@ -169,23 +173,50 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
         signalAddress = reinterpret_cast<void *>(&rx_signals.message_tx_time);
     } else if (signalIdx == 6u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.rx_buffer_occupancy);
-    } else if (signalIdx == 7u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc_time);
+    } 
+
+//INPUT
+    // positionRotor(0u),
+    // positionEncoder(0u),
+    // Pwm1Counter(0u),
+    // CYCCNT(0u)
+    else if (signalIdx == 7u) {
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.positionRotor);
     } else if (signalIdx == 8u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.pps1_time);
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.positionEncoder);
     } else if (signalIdx == 9u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.pps2_time);
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.Pwm1Counter);
     } else if (signalIdx == 10u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc1_data);
-    } else if (signalIdx == 11u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc2_data);
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.CYCCNT);
+    } 
+    //OUTPUT
+    // control_target_steps,
+    // gpioState,
+    // Pwm1Period
+    else if (signalIdx == 11u) {
+        signalAddress = reinterpret_cast<void *>(&tx_signals.control_target_steps);
     } else if (signalIdx == 12u) {
-        signalAddress = reinterpret_cast<void *>(&tx_signals.dac1_data);
+        signalAddress = reinterpret_cast<void *>(&tx_signals.gpioState);
     } else if (signalIdx == 13u) {
-        signalAddress = reinterpret_cast<void *>(&tx_signals.dac2_data);
-    } else {
-        ;
-    }
+        signalAddress = reinterpret_cast<void *>(&tx_signals.Pwm1Period);
+    } 
+    // else if (signalIdx == 7u) {
+    //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc_time);
+    // } else if (signalIdx == 8u) {
+    //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.pps1_time);
+    // } else if (signalIdx == 9u) {
+    //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.pps2_time);
+    // } else if (signalIdx == 10u) {
+    //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc1_data);
+    // } else if (signalIdx == 11u) {
+    //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc2_data);
+    // } else if (signalIdx == 12u) {
+    //     signalAddress = reinterpret_cast<void *>(&tx_signals.dac1_data);
+    // } else if (signalIdx == 13u) {
+    //     signalAddress = reinterpret_cast<void *>(&tx_signals.dac2_data);
+    // } else {
+    //     ;
+    // }
     
     if (signalAddress == NULL) {
         return false;
@@ -285,48 +316,107 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal RxBufferOccupancy");
         }
     }
+
+
+//INPUT
+    // positionRotor(0u),
+    // positionEncoder(0u),
+    // Pwm1Counter(0u),
+    // CYCCNT(0u)
+
+
     if (ok) {
         ok = DataSourceCheckSignalProperties(*this, 7u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal ADCTime");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal positionRotor");
         }
     }
     if (ok) {
         ok = DataSourceCheckSignalProperties(*this, 8u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal PPS1Time");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal positionEncoder");
         }
     }
     if (ok) {
         ok = DataSourceCheckSignalProperties(*this, 9u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal PPS2Time");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal Pwm1Counter");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 10u, UnsignedInteger16Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 10u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal ADC1Data");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal CYCCNT");
+        }
+    }
+
+//OUTPUT
+    // control_target_steps,
+    // gpioState,
+    // Pwm1Period
+    if (ok) {
+        ok = DataSourceCheckSignalProperties(*this, 11u, Float64Bit, 0u, 1u);
+        if (!ok) {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal control_target_steps");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 11u, UnsignedInteger16Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 12u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal ADC2Data");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal gpioState");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 12u, UnsignedInteger16Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 13u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal DAC1Data");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal Pwm1Period");
         }
     }
-    if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 13u, UnsignedInteger16Bit, 0u, 1u);
-        if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal DAC2Data");
-        }
-    }
+
+
+
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 7u, UnsignedInteger32Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal ADCTime");
+    //     }
+    // }
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 8u, UnsignedInteger32Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal PPS1Time");
+    //     }
+    // }
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 9u, UnsignedInteger32Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal PPS2Time");
+    //     }
+    // }
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 10u, UnsignedInteger16Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal ADC1Data");
+    //     }
+    // }
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 11u, UnsignedInteger16Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal ADC2Data");
+    //     }
+    // }
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 12u, UnsignedInteger16Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal DAC1Data");
+    //     }
+    // }
+    // if (ok) {
+    //     ok = DataSourceCheckSignalProperties(*this, 13u, UnsignedInteger16Bit, 0u, 1u);
+    //     if (!ok) {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal DAC2Data");
+    //     }
+    // }
 
     return ok;
 }
@@ -372,7 +462,7 @@ bool STM32::RxSynchronise() {
         for (uint32 frame = 0; frame < STM32_BUFSIZE / DataFrame::RX_FRAME_SIZE; frame++) {
             // Sanitise the rx_buffer - delete any leading rogue bytes that cannot be part of an STM32
             // Rx data frame
-            rx_signals.discarded_byte_count += DataFrame::SanitiseRxBuffer(rx_buffer);
+           // rx_signals.discarded_byte_count += DataFrame::SanitiseRxBuffer(rx_buffer);
 
             DataFrame::RxDataFrame dataframe;
             if (DataFrame::GetNextRxDataFrame(rx_buffer, rx_signals.dataframe)) {
@@ -393,14 +483,22 @@ bool STM32::RxSynchronise() {
 }
 
 bool STM32::TxSynchronise() {
-    uint16 tx_buffer;
+    //uint16 tx_buffer;
     
-    tx_buffer = tx_signals.dac1_data;
+    //tx_buffer = tx_signals.control_target_steps;
 
-    int ret = write(serial_fd, &tx_buffer, sizeof(tx_buffer));
-    if (ret < static_cast<int32>(sizeof(tx_buffer))) {
+    int ret = write(serial_fd, &tx_signals.control_target_steps, sizeof(tx_signals.control_target_steps));
+    if (ret >= static_cast<int32>(sizeof(tx_signals.control_target_steps))) {
         // To do: record that a write error occurred
+        ret = write(serial_fd, &tx_signals.gpioState, sizeof(tx_signals.gpioState));
+
+        if (ret >= static_cast<int32>(sizeof(tx_signals.gpioState))) {
+            ret = write(serial_fd, &tx_signals.Pwm1Period, sizeof(tx_signals.Pwm1Period));
+
+        }
+
     }
+
     rx_signals.message_tx_time = HighResolutionTimer::Counter();
 
     return true;

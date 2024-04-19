@@ -12,7 +12,7 @@
             "request": "launch",
             "program": "${env:MARTe2_DIR}/Build/x86-linux/App/MARTeApp.ex",
             "args": [
-                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit.cfg", "-s", "State1"
+                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit_STM32.cfg", "-s", "State1"
             ],
             "stopAtEntry": true,
             "cwd": "${env:MARTe2_DIR}/Build/x86-linux/App",

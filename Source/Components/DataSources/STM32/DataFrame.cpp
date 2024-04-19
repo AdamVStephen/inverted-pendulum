@@ -8,11 +8,16 @@ namespace DataFrame {
 const uint8 SYNC_BYTES[4] = {0x00, 0xAC, 0xDD, 0xDD};
 
 RxDataFrame::RxDataFrame() : 
-                        adc_time(0u),
-                        pps1_time(0u),
-                        pps2_time(0u),
-                        adc1_data(0u),
-                        adc2_data(0u) {
+                        positionRotor(0u),
+                        positionEncoder(0u),
+                        Pwm1Counter(0u),
+                        CYCCNT(0u)
+                        // adc_time(0u),
+                        // pps1_time(0u),
+                        // pps2_time(0u),
+                        // adc1_data(0u),
+                        // adc2_data(0u) 
+{
                         
 }
 
@@ -62,6 +67,29 @@ bool GetNextRxDataFrame(SerialBuffer& buffer, RxDataFrame& dataframe) {
 }
 
 void ParseRxDataFramePayload(uint8* raw, RxDataFrame& dataframe) {  
+    dataframe.positionRotor = static_cast<uint32>(raw[0]) +
+                        (static_cast<uint32>(raw[1]) << 8) +
+                        (static_cast<uint32>(raw[2]) << 16) +
+                        (static_cast<uint32>(raw[3]) << 24);
+
+    dataframe.positionEncoder = static_cast<uint32>(raw[4]) +
+                         (static_cast<uint32>(raw[5]) << 8) +
+                         (static_cast<uint32>(raw[6]) << 16) +
+                         (static_cast<uint32>(raw[7]) << 24);
+
+    dataframe.Pwm1Counter = static_cast<uint32>(raw[8]) +
+                         (static_cast<uint32>(raw[9]) << 8) +
+                         (static_cast<uint32>(raw[10]) << 16) +
+                         (static_cast<uint32>(raw[11]) << 24);
+
+    dataframe.CYCCNT =   static_cast<uint16>(raw[12]) +
+                         (static_cast<uint16>(raw[13]) << 8)+
+                         (static_cast<uint32>(raw[14]) << 16) +
+                         (static_cast<uint32>(raw[15]) << 24);
+
+}
+
+void ParseRxDataFramePayloadOld(uint8* raw, RxDataFrame& dataframe) {  
     dataframe.adc_time = static_cast<uint32>(raw[0]) +
                         (static_cast<uint32>(raw[1]) << 8) +
                         (static_cast<uint32>(raw[2]) << 16) +

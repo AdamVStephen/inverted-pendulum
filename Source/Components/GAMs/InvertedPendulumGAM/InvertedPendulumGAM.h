@@ -556,7 +556,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    void user_configuration(void);
    void Main_StepClockHandler();
    void apply_acceleration(float * acc, float* target_velocity_prescaled, float t_sample);
-   float InvertedPendulumGAM::L6474_Board_Pwm1PrescaleFreq( float freq );
+   float L6474_Board_Pwm1PrescaleFreq( float freq );
 
    /* Acceleration control system variables */
    volatile uint32_t apply_acc_start_time;
@@ -626,7 +626,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    float rotor_position_diff, rotor_position_diff_prev;
    float rotor_position_diff_filter, rotor_position_diff_filter_prev;
    int rotor_target_in_steps;
-   int initial_rotor_position;
+   //int initial_rotor_position;
 
    /* Rotor Plant Design variables */
    int select_rotor_plant_design, enable_rotor_plant_design, enable_rotor_plant_gain_design;
