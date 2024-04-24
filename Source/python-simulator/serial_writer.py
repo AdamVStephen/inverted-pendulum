@@ -3,12 +3,12 @@ import time
 import json
 import random
 
-writer_port_name = '/dev/pts/7'  # Replace with the appropriate serial port name
-listener_port_name = '/dev/pts/13'
+writer_port_name = '/dev/pts/8'  # Replace with the appropriate serial port name
+listener_port_name = '/dev/pts/7'
 
 try:
     # Open the serial port
-    writer_ser = serial.Serial(writer_port_name)
+    writer_ser = serial.Serial(writer_port_name, 230400)
     print(f"Serial port '{writer_ser.name}' opened successfully.")
 
     listener_ser = serial.Serial(listener_port_name)

@@ -26,12 +26,12 @@ struct STM32OutSignals {
     DataFrame::RxDataFrame dataframe;
 };
 
-struct STM32InSignals {
+struct STM32InSignals { 
     STM32InSignals();
     // MARTe::uint16 dac1_data;
     // MARTe::uint16 dac2_data;
 
-    MARTe::float64 control_target_steps;
+    MARTe::float32 control_target_steps;
     MARTe::uint8 gpioState;
     MARTe::uint32 Pwm1Period;
 

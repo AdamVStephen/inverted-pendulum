@@ -468,7 +468,7 @@ namespace MFI {
    } arm_pid_instance_a_f32;
 
 
-enum MOTOR_DIRECTION { FORWARD, BACKWARD };
+enum MOTOR_DIRECTION { FORWARD=1, BACKWARD };
 
 class InvertedPendulumGAM : public MARTe::GAM {
  public:
@@ -505,14 +505,14 @@ class InvertedPendulumGAM : public MARTe::GAM {
    MARTe::uint32* INPUT_rotor_position_steps;
    MARTe::uint32* INPUT_L6474_Board_Pwm1Counter;
    MARTe::uint32* INPUT_CYCCNT;
-   MARTe::int8* INPUT_IsReady;
+    MARTe::uint32* INPUT_message_count;
    //********************########################################################*************************************
 
    //********************############### Out Signals #########################*************************************
    //MARTe::uint32 encoder_position_steps;
 
       /* Control system output signal */
-   MARTe::float64* OUTPUT_rotor_control_target_steps;
+   MARTe::float32* OUTPUT_rotor_control_target_steps;
    MARTe::uint8* OUTPUT_gpioState;
    MARTe::uint32* OUTPUT_L6474_Board_Pwm1Period;
    //********************########################################################*************************************

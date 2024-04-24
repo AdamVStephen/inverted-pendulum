@@ -5,7 +5,7 @@
             "binaryPath": "/root/projects/UKAEA-Sygensys-develop/Startup/Main.sh",
             "stopAtEntry": false,
             "binaryArgs": [
-                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit_STM32.cfg", "-s", "State1", "--perf"
+                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit_STM32_InvertedGAM.cfg", "-s", "State1", "--perf"
             ]
         }
     ],
@@ -15,6 +15,7 @@
     "files.associations": {
         "array": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "*.tcc": "cpp"
     }
 }

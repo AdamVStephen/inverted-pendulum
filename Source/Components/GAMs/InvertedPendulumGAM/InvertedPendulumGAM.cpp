@@ -17,9 +17,9 @@ InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
    INPUT_rotor_position_steps    = NULL_PTR(uint32*);
    INPUT_L6474_Board_Pwm1Counter = NULL_PTR(uint32*);
    INPUT_CYCCNT                  = NULL_PTR(uint32*);
-   INPUT_IsReady                 = NULL_PTR(int8*);
+   INPUT_message_count           = NULL_PTR(uint32*);
 
-   OUTPUT_rotor_control_target_steps    = NULL_PTR(float64*);
+   OUTPUT_rotor_control_target_steps    = NULL_PTR(float32*);
    OUTPUT_gpioState                     = NULL_PTR(uint8*);
    OUTPUT_L6474_Board_Pwm1Period        = NULL_PTR(uint32*);
 
@@ -1629,6 +1629,7 @@ void InvertedPendulumGAM::control_logic() {
         } else {
             apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
         }
+        *OUTPUT_rotor_control_target_steps = 0;
     } else {
         *OUTPUT_rotor_control_target_steps = rotor_control_target_steps/2;
         //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
@@ -1668,28 +1669,28 @@ void InvertedPendulumGAM::control_logic() {
     /* High speed sampling mode data reporting */
     /* Time reported is equal to ((cycle time - 2000)microseconds/10) */
 
-    if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 1 && enable_rotor_tracking_comb_signal == 0 && ACCEL_CONTROL_DATA == 0){
-        sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", cycle_period_sum - 200, (int)(roundf(encoder_position)), display_parameter,
-                (int)(roundf(rotor_control_target_steps)),(int)(reference_tracking_command));
-        show_error();
-    }
+    // if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 1 && enable_rotor_tracking_comb_signal == 0 && ACCEL_CONTROL_DATA == 0){
+    //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", cycle_period_sum - 200, (int)(roundf(encoder_position)), display_parameter,
+    //             (int)(roundf(rotor_control_target_steps)),(int)(reference_tracking_command));
+    //     show_error();
+    // }
 
     /* High speed sampling mode data reporting without rotor chirp signal and with comb signal */
-    if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && enable_rotor_tracking_comb_signal == 1 && ACCEL_CONTROL_DATA == 0){
-        sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", current_cpu_cycle_delay_relative_report,
-                (int)(roundf(encoder_position)), display_parameter, (int)(roundf(rotor_control_target_steps)), (int)(roundf(100*rotor_position_command_steps)));
-        show_error();
-    }
+    // if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && enable_rotor_tracking_comb_signal == 1 && ACCEL_CONTROL_DATA == 0){
+    //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", current_cpu_cycle_delay_relative_report,
+    //             (int)(roundf(encoder_position)), display_parameter, (int)(roundf(rotor_control_target_steps)), (int)(roundf(100*rotor_position_command_steps)));
+    //     show_error();
+    // }
 
     /* High speed sampling mode data reporting without rotor chirp signal and without comb signal */
     /* Time reported is equal to ((cycle time - sample time)microseconds/10) */
-    if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && enable_rotor_tracking_comb_signal == 0 && ACCEL_CONTROL_DATA == 0){
+    // if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && enable_rotor_tracking_comb_signal == 0 && ACCEL_CONTROL_DATA == 0){
 
-        sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", cycle_period_sum - 200,
-                (int)(roundf(encoder_position)), display_parameter,
-                (int)(roundf(rotor_control_target_steps)),(int)(reference_tracking_command));
-        show_error();
-    }
+    //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", cycle_period_sum - 200,
+    //             (int)(roundf(encoder_position)), display_parameter,
+    //             (int)(roundf(rotor_control_target_steps)),(int)(reference_tracking_command));
+    //     show_error();
+    // }
 
     if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && ACCEL_CONTROL_DATA == 1){
         if (enable_pendulum_position_impulse_response_cycle == 1) {
@@ -1698,18 +1699,18 @@ void InvertedPendulumGAM::control_logic() {
             reference_tracking_command = rotor_position_command_steps;
         }
 
-        if (Tsample <= 0.00125) { // 1/800Hz = 0.00125s
-            /* High speed sampling mode data reporting for 800 Hz mode */
-            sprintf(msg_display, "%i\t%i\r\n", (int)reference_tracking_command, current_pwm_period);
-            show_error();
-        } else {
-            /* High speed sampling mode data reporting for 500 Hz mode with acceleration contol system data */
-            sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\r\n",
-                    (int)reference_tracking_command, (int)(roundf(rotor_control_target_steps/10)),(int)(rotor_position_command_steps),
-                    current_pwm_period, desired_pwm_period/10000,
-                    (clock_int_time/100000));
-            show_error();
-        }
+        // if (Tsample <= 0.00125) { // 1/800Hz = 0.00125s
+        //     /* High speed sampling mode data reporting for 800 Hz mode */
+        //     sprintf(msg_display, "%i\t%i\r\n", (int)reference_tracking_command, current_pwm_period);
+        //     show_error();
+        // } else {
+        //     /* High speed sampling mode data reporting for 500 Hz mode with acceleration contol system data */
+        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\r\n",
+        //             (int)reference_tracking_command, (int)(roundf(rotor_control_target_steps/10)),(int)(rotor_position_command_steps),
+        //             current_pwm_period, desired_pwm_period/10000,
+        //             (clock_int_time/100000));
+        //     show_error();
+        // }
     }
 
     /* Select display parameter corresponding to requested selection of Sensitivity Functions */
@@ -1739,43 +1740,43 @@ void InvertedPendulumGAM::control_logic() {
             */
 
 
-        if (report_mode != 1000 && report_mode != 2000 && speed_governor == 0){
-            sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%.1f\t%i\t%i\r\n", (int)2, cycle_period_sum - 200,
-                    current_cpu_cycle_delay_relative_report,
-                    (int)(roundf(encoder_position)), display_parameter, (int)(PID_Pend.int_term)/100,
-                    reference_tracking_command, (int)(roundf(rotor_control_target_steps)),
-                    (int)(PID_Rotor.control_output)/100);
-            show_error();
-        }
+        // if (report_mode != 1000 && report_mode != 2000 && speed_governor == 0){
+        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%.1f\t%i\t%i\r\n", (int)2, cycle_period_sum - 200,
+        //             current_cpu_cycle_delay_relative_report,
+        //             (int)(roundf(encoder_position)), display_parameter, (int)(PID_Pend.int_term)/100,
+        //             reference_tracking_command, (int)(roundf(rotor_control_target_steps)),
+        //             (int)(PID_Rotor.control_output)/100);
+        //     show_error();
+        // }
 
-        if (report_mode != 1000 && report_mode != 2000 && (i % speed_scale) == 0 && speed_governor == 1){
-            sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%.1f\t%i\t%i\r\n", (int)2, cycle_period_sum - 200,
-                    current_cpu_cycle_delay_relative_report,
-                    (int)(roundf(encoder_position)), display_parameter, (int)(PID_Pend.int_term)/100,
-                    reference_tracking_command, (int)(roundf(rotor_control_target_steps)),
-                    (int)(PID_Rotor.control_output)/100);
-            show_error();
-        }
+        // if (report_mode != 1000 && report_mode != 2000 && (i % speed_scale) == 0 && speed_governor == 1){
+        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%.1f\t%i\t%i\r\n", (int)2, cycle_period_sum - 200,
+        //             current_cpu_cycle_delay_relative_report,
+        //             (int)(roundf(encoder_position)), display_parameter, (int)(PID_Pend.int_term)/100,
+        //             reference_tracking_command, (int)(roundf(rotor_control_target_steps)),
+        //             (int)(PID_Rotor.control_output)/100);
+        //     show_error();
+        // }
 
         /* Provide reports each 1000th cycle of system parameters
             * Speed parameters scaled by 10 to reduce communication bandwidth
             */
 
-        if (report_mode == 1000){
-            sprintf(msg_display, "%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%i\t%i\r\n", (int)0,
-                    PID_Pend.Kp, PID_Pend.Ki, PID_Pend.Kd,
-                    PID_Rotor.Kp, PID_Rotor.Ki, PID_Rotor.Kd,
-                    max_speed/10, min_speed/10);
-            show_error();
-        }
-        if (report_mode == 2000){
-            sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\r\n", (int)1,
-                    (int)torq_current_val, max_accel, max_decel, enable_disturbance_rejection_step,
-                    enable_noise_rejection_step, enable_rotor_position_step_response_cycle,
-                    (int)(adjust_increment*10), enable_sensitivity_fnc_step);
-            report_mode = 0;
-            show_error();
-        }
+        // if (report_mode == 1000){
+        //     sprintf(msg_display, "%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%i\t%i\r\n", (int)0,
+        //             PID_Pend.Kp, PID_Pend.Ki, PID_Pend.Kd,
+        //             PID_Rotor.Kp, PID_Rotor.Ki, PID_Rotor.Kd,
+        //             max_speed/10, min_speed/10);
+        //     show_error();
+        // }
+        // if (report_mode == 2000){
+        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\r\n", (int)1,
+        //             (int)torq_current_val, max_accel, max_decel, enable_disturbance_rejection_step,
+        //             enable_noise_rejection_step, enable_rotor_position_step_response_cycle,
+        //             (int)(adjust_increment*10), enable_sensitivity_fnc_step);
+        //     report_mode = 0;
+        //     show_error();
+        // }
         report_mode = report_mode + 1;
 
     }
@@ -1900,7 +1901,8 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
     //******************set OUTPUT
 	if (old_dir != new_dir) {
 		*OUTPUT_gpioState = new_dir; 
-	}
+	}else
+        *OUTPUT_gpioState = ((uint8_t)0xFF) ;
 
 	if (current_pwm_period_local != 0) {
 		uint32_t pwm_count = *INPUT_L6474_Board_Pwm1Counter;
@@ -1960,22 +1962,22 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfInputSignals = GetNumberOfInputSignals();
-        ok = (nOfInputSignals == 4u); // Will need to be changed if any input signals are added or removed
+        ok = (nOfInputSignals == 5u); // Will need to be changed if any input signals are added or removed
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 4", gam_name.Buffer());
         }
     } 
     uint32 signalIdx;
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "IsReady", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "MessageCount", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            INPUT_IsReady = (int8*) GetInputSignalMemory(signalIdx);
+            INPUT_message_count = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal IsReady");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal message_count");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             INPUT_encoder_position_steps = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
@@ -1983,7 +1985,7 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             INPUT_rotor_position_steps = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
@@ -1991,7 +1993,7 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "L6474_Board_Pwm1Counter", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "L6474_Board_Pwm1Counter", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             INPUT_L6474_Board_Pwm1Counter = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
@@ -1999,7 +2001,7 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "CYCCNT", InputSignals, UnsignedInteger16Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "CYCCNT", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             INPUT_CYCCNT = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
@@ -2016,15 +2018,15 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, Float32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            OUTPUT_rotor_control_target_steps = (float64*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_rotor_control_target_steps = (float32*) GetOutputSignalMemory(signalIdx);
         } else {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal rotor_control_target_steps");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "gpioState", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "gpioState", OutputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
         if (ok) {
             OUTPUT_gpioState = (uint8*) GetOutputSignalMemory(signalIdx);
         } else {
@@ -2146,7 +2148,7 @@ void InvertedPendulumGAM::assign_mode_3(arm_pid_instance_a_f32 *PID_Pend, arm_pi
 
 bool InvertedPendulumGAM::Execute() {
 
-    if( *INPUT_IsReady == 1)
+    if( *INPUT_message_count > 0)
         control_logic();
     return true;
 }

@@ -23,17 +23,21 @@ MARTe::uint32 SanitiseRxBuffer(SerialBuffer& buffer);
 class RxDataFrame {
  public:    
     RxDataFrame();
-    MARTe::uint32 adc_time;
-    MARTe::uint32 pps1_time;
-    MARTe::int32 pps2_time;
-    MARTe::uint16 adc1_data;
-    MARTe::uint16 adc2_data;
+    // MARTe::uint32 adc_time;
+    // MARTe::uint32 pps1_time;
+    // MARTe::int32 pps2_time;
+    // MARTe::uint16 adc1_data;
+    // MARTe::uint16 adc2_data;
 
 
     MARTe::uint32 positionRotor;
     MARTe::uint32 positionEncoder;
     MARTe::int32  Pwm1Counter;
     MARTe::int32 CYCCNT;
+
+    MARTe::float32 OUTPUT_rotor_control_target_steps;
+    MARTe::uint8 OUTPUT_gpioState;
+    MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
 
 };
 

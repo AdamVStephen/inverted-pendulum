@@ -137,6 +137,7 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/DataSources/STM32
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/GAMs/UTCTimestampingGAM
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/GAMs/DownsamplingGAM
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/GAMs/InversionGAM
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/GAMs/InvertedPendulumGAM
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/Lib/DataSourceSignalChecker
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/Lib/GAMSignalChecker
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../Build/$TARGET/Components/Lib/SerialBuffer

@@ -3,7 +3,7 @@ import serial
 import random
 import struct
 
-serial_port_name: str = '/dev/pts/9'  # Replace with the appropriate serial port name
+serial_port_name: str = '/dev/pts/7'  # Replace with the appropriate serial port name
 
 OFFSET_LOWER_RANGE: float = -0.001
 OFFSET_UPPER_RANGE: float = 0.001
@@ -13,7 +13,8 @@ def oppositeSigns(x: int, y: int) -> bool:
 
 try:
     # Opens the serial port
-    serial_port: serial.Serial = serial.Serial(serial_port_name)
+    serial_port: serial.Serial = serial.Serial(serial_port_name, 230400)
+    serial_port.flush()
     print(f"Serial port '{serial_port.name}' opened successfully.")
 
     encoder_position: int = 0
@@ -27,8 +28,13 @@ try:
 
     while True:
 
-        ba = bytearray(struct.pack("4i", random.randint(0, 32768), random.randint(0, 32768), random.randint(0, 32768), random.randint(0, 32768)))
+       
+        # ba = bytearray(struct.pack("4i", random.randint(0, 32768), random.randint(0, 32768), random.randint(0, 32768), random.randint(0, 32768)))
+        ba = bytearray(struct.pack("4i", 1, 1, 1, 1 ))
         serial_port.write( ba )
+        #print('listening .... ')
+        #print( serial_port.readline() )
+        
         continue
 
         received_messages: list = serial_port.readline().decode().split(";")

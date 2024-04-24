@@ -5,16 +5,16 @@ import json
 import random
 
 # writer_port_name = '/dev/pts/12'  # Replace with the appropriate serial port name
-listener_port_name = '/dev/pts/9'
+listener_port_name = '/dev/pts/7'
 
 try:
     # Open the serial port
-    listener_ser = serial.Serial(listener_port_name)
+    listener_ser = serial.Serial(listener_port_name, 230400)
     print(f"Serial port '{listener_ser.name}' opened successfully.")
     listener_ser.flush()
 
     while True:
-        line = listener_ser.readline().decode().strip("'")
+        line = listener_ser.readline().decode()
         # received_data = json.loads(line)
         print(line)
 
