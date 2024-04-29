@@ -13,13 +13,13 @@ namespace MFI {
 
 InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
 
-   INPUT_encoder_position_steps  = NULL_PTR(uint32*);
-   INPUT_rotor_position_steps    = NULL_PTR(uint32*);
+   INPUT_encoder_position_steps  = NULL_PTR(int32*);
+   INPUT_rotor_position_steps    = NULL_PTR(int32*);
    INPUT_L6474_Board_Pwm1Counter = NULL_PTR(uint32*);
    INPUT_CYCCNT                  = NULL_PTR(uint32*);
    INPUT_message_count           = NULL_PTR(uint32*);
 
-   OUTPUT_rotor_control_target_steps    = NULL_PTR(float32*);
+   OUTPUT_rotor_control_target_steps    = NULL_PTR(int32*);
    OUTPUT_gpioState                     = NULL_PTR(uint8*);
    OUTPUT_L6474_Board_Pwm1Period        = NULL_PTR(uint32*);
 
@@ -1979,7 +1979,7 @@ bool InvertedPendulumGAM::Setup() {
     if (ok) {    
         ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            INPUT_encoder_position_steps = (uint32*) GetInputSignalMemory(signalIdx);
+            INPUT_encoder_position_steps = (int32*) GetInputSignalMemory(signalIdx);
         } else {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal encoder_position_steps");
         }
@@ -1987,7 +1987,7 @@ bool InvertedPendulumGAM::Setup() {
     if (ok) {    
         ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            INPUT_rotor_position_steps = (uint32*) GetInputSignalMemory(signalIdx);
+            INPUT_rotor_position_steps = (int32*) GetInputSignalMemory(signalIdx);
         } else {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal rotor_position_steps ");
         }
@@ -2020,7 +2020,7 @@ bool InvertedPendulumGAM::Setup() {
     if (ok) {    
         ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, Float32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            OUTPUT_rotor_control_target_steps = (float32*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_rotor_control_target_steps = (int32*) GetOutputSignalMemory(signalIdx);
         } else {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal rotor_control_target_steps");
         }

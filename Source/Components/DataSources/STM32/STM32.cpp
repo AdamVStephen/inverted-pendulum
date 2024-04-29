@@ -44,8 +44,8 @@ STM32OutSignals::STM32OutSignals():
 
 STM32InSignals::STM32InSignals():
                         control_target_steps(0u),
-                         gpioState(0u),
-                         Pwm1Period(0u)
+                         Pwm1Period(0u),
+                         gpioState(0u)
                         //   dac1_data(0u),
                         //   dac2_data(0u) 
 {
@@ -277,7 +277,7 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     if (ok) {
         ok = (GetNumberOfSignals() == 17u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 14 signals should be specified");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 17 signals should be specified");
         }
     }
     
@@ -333,13 +333,13 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
 
 
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 7u, UnsignedInteger32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 7u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal positionRotor");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 8u, UnsignedInteger32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 8u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal positionEncoder");
         }
@@ -362,7 +362,7 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     // gpioState,
     // Pwm1Period
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 11u, Float32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 11u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal control_target_steps");
         }
@@ -381,17 +381,19 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     }
 
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 14u, Float32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 14u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_rotor_control_target_steps");
         }
     }
+    
     if (ok) {
         ok = DataSourceCheckSignalProperties(*this, 15u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_gpioState");
         }
     }
+
     if (ok) {
         ok = DataSourceCheckSignalProperties(*this, 16u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
@@ -399,6 +401,9 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
         }
     }
 
+    
+
+    
 
     // if (ok) {
     //     ok = DataSourceCheckSignalProperties(*this, 7u, UnsignedInteger32Bit, 0u, 1u);

@@ -32,8 +32,8 @@ struct STM32InSignals {
     // MARTe::uint16 dac2_data;
 
     MARTe::float32 control_target_steps;
-    MARTe::uint8 gpioState;
     MARTe::uint32 Pwm1Period;
+    MARTe::uint8 gpioState;
 
 };
 

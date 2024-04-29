@@ -8,7 +8,7 @@ namespace MFI {
 namespace DataFrame {
 
 extern const MARTe::uint8 SYNC_BYTES[4];
-const MARTe::uint32 RX_FRAME_SIZE = 16; //20;
+const MARTe::uint32 RX_FRAME_SIZE = 25; //20;
 
 /**
  * @brief Remove any leading non-message bytes from the buffer
@@ -30,14 +30,14 @@ class RxDataFrame {
     // MARTe::uint16 adc2_data;
 
 
-    MARTe::uint32 positionRotor;
-    MARTe::uint32 positionEncoder;
-    MARTe::int32  Pwm1Counter;
-    MARTe::int32 CYCCNT;
+    MARTe::int32 positionRotor;
+    MARTe::int32 positionEncoder;
+    MARTe::uint32  Pwm1Counter;
+    MARTe::uint32 CYCCNT;
 
-    MARTe::float32 OUTPUT_rotor_control_target_steps;
-    MARTe::uint8 OUTPUT_gpioState;
+    MARTe::int32 OUTPUT_rotor_control_target_steps;
     MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
+    MARTe::uint8 OUTPUT_gpioState;
 
 };
 

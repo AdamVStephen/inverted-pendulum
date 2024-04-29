@@ -3,8 +3,9 @@ import serial
 import time
 import json
 import random
+import struct
 
-writer_port_name = '/dev/pts/9'  # Replace with the appropriate serial port name
+writer_port_name = '/dev/pts/8'  # Replace with the appropriate serial port name
 
 try:
     # Open the serial port
@@ -21,8 +22,14 @@ try:
         # TODO: Don't need to use json, processing as well
         # writer_ser.write(test_data)
 
-        writer_ser.write(b'0;2,2;1;0;2,2;\n')
+        #writer_ser.write(b'0;2,2;1;0;2,2;\n')
         # writer_ser.write(b'\n')
+
+        ba = bytearray(struct.pack("fiii", 345.678, 7, 20, 1, 200,5,4))
+        writer_ser.write( ba )
+        time.sleep(15)
+        continue
+
 
         time.sleep(10)
 
