@@ -43,7 +43,7 @@ STM32OutSignals::STM32OutSignals():
 }
 
 STM32InSignals::STM32InSignals():
-                        control_target_steps(0u),
+                        control_target_steps(0),
                          Pwm1Period(0u),
                          gpioState(0u)
                         //   dac1_data(0u),
@@ -514,11 +514,14 @@ bool STM32::RxSynchronise() {
 
 bool STM32::TxSynchronise() {
     //uint16 tx_buffer;
-    
-    //tx_buffer = tx_signals.control_target_steps;
-    tx_signals.control_target_steps=1;
-    tx_signals.gpioState=1;
-    tx_signals.Pwm1Period=1;
+     //tx_buffer = tx_signals.control_target_steps;
+
+    // STM32InSignals sg;
+    // sg.control_target_steps=120;
+    // sg.gpioState=5;
+    // sg.Pwm1Period=987;
+    // int ret = write(serial_fd, &sg, sizeof(sg));
+
     int ret = write(serial_fd, &tx_signals, sizeof(tx_signals));
 
     rx_signals.message_tx_time = HighResolutionTimer::Counter();

@@ -8,13 +8,13 @@ namespace DataFrame {
 const uint8 SYNC_BYTES[4] = {0x00, 0xAC, 0xDD, 0xDD};
 
 RxDataFrame::RxDataFrame() : 
-                        positionRotor(0u),
-                        positionEncoder(0u),
+                        positionRotor(0),
+                        positionEncoder(0),
                         Pwm1Counter(0u),
                         CYCCNT(0u), 
                         OUTPUT_rotor_control_target_steps(0),
-                        OUTPUT_L6474_Board_Pwm1Period(0),
-                        OUTPUT_gpioState(0)
+                        OUTPUT_L6474_Board_Pwm1Period(0u),
+                        OUTPUT_gpioState(0u)
                         // adc_time(0u),
                         // pps1_time(0u),
                         // pps2_time(0u),

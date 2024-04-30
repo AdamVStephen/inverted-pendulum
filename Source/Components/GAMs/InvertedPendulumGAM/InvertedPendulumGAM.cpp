@@ -1977,7 +1977,7 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             INPUT_encoder_position_steps = (int32*) GetInputSignalMemory(signalIdx);
         } else {
@@ -1985,7 +1985,7 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             INPUT_rotor_position_steps = (int32*) GetInputSignalMemory(signalIdx);
         } else {
@@ -2018,7 +2018,7 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, Float32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
             OUTPUT_rotor_control_target_steps = (int32*) GetOutputSignalMemory(signalIdx);
         } else {

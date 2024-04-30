@@ -26,16 +26,18 @@ struct STM32OutSignals {
     DataFrame::RxDataFrame dataframe;
 };
 
+#pragma pack(push, 1)
 struct STM32InSignals { 
     STM32InSignals();
     // MARTe::uint16 dac1_data;
     // MARTe::uint16 dac2_data;
 
-    MARTe::float32 control_target_steps;
+    MARTe::int32 control_target_steps;
     MARTe::uint32 Pwm1Period;
     MARTe::uint8 gpioState;
 
 };
+#pragma pack(pop)
 
 /**
  * @brief A DataSource for reception and tranmission of ADC and DAC data frames from and to the
