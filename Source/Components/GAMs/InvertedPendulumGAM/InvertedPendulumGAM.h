@@ -477,7 +477,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
     InvertedPendulumGAM();
     virtual ~InvertedPendulumGAM();
 
-   void control_logic();
+   bool control_logic();
    void control_logic_Initialise();
    void control_logic_Initialise_interactive();
 
@@ -501,11 +501,12 @@ class InvertedPendulumGAM : public MARTe::GAM {
     //ADCSample prev_sample;
 
    //********************############### Input Signals #########################*************************************
-   MARTe::int32* INPUT_encoder_position_steps;
+   MARTe::float32* INPUT_encoder_position;
    MARTe::int32* INPUT_rotor_position_steps;
    MARTe::uint32* INPUT_L6474_Board_Pwm1Counter;
    MARTe::uint32* INPUT_CYCCNT;
-    MARTe::uint32* INPUT_message_count;
+   MARTe::uint32* INPUT_message_count;
+   MARTe::uint8* INPUT_state;
    //********************########################################################*************************************
 
    //********************############### Out Signals #########################*************************************
@@ -515,6 +516,8 @@ class InvertedPendulumGAM : public MARTe::GAM {
    MARTe::int32* OUTPUT_rotor_control_target_steps;
    MARTe::uint8* OUTPUT_gpioState;
    MARTe::uint32* OUTPUT_L6474_Board_Pwm1Period;
+   MARTe::uint8* OUTPUT_break_Control_Loop;
+   //MARTe::uint8* OUTPUT_state;
    //********************########################################################*************************************
 
 
@@ -548,10 +551,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
 
    // volatile uint16_t gLastError;
    /* Private function prototypes -----------------------------------------------*/
-   void read_float(uint32_t * RxBuffer_ReadIdx, uint32_t * RxBuffer_WriteIdx , uint32_t * readBytes, float *float_return);
    void Error_Handler(uint16_t error);
-   void read_int(uint32_t * RxBuffer_ReadIdx, uint32_t * RxBuffer_WriteIdx , uint32_t * readBytes, int * int_return);
-   void read_char(uint32_t * RxBuffer_ReadIdx, uint32_t * RxBuffer_WriteIdx , uint32_t * readBytes, char * char_return);
    void select_mode_1(void);
    void user_configuration(void);
    void Main_StepClockHandler();

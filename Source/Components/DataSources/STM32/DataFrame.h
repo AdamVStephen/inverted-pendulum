@@ -8,7 +8,7 @@ namespace MFI {
 namespace DataFrame {
 
 extern const MARTe::uint8 SYNC_BYTES[4];
-const MARTe::uint32 RX_FRAME_SIZE = 25; //20;
+const MARTe::uint32 RX_FRAME_SIZE = 26; //20;
 
 /**
  * @brief Remove any leading non-message bytes from the buffer
@@ -20,25 +20,34 @@ MARTe::uint32 SanitiseRxBuffer(SerialBuffer& buffer);
 /**
  * @brief The contents of an Rx data frame
  */
-class RxDataFrame {
- public:    
-    RxDataFrame();
-    // MARTe::uint32 adc_time;
-    // MARTe::uint32 pps1_time;
-    // MARTe::int32 pps2_time;
-    // MARTe::uint16 adc1_data;
-    // MARTe::uint16 adc2_data;
 
-
+#pragma pack(push, 1)
+typedef struct  { 
     MARTe::int32 positionRotor;
-    MARTe::int32 positionEncoder;
+    MARTe::float32 positionEncoder;
     MARTe::uint32  Pwm1Counter;
     MARTe::uint32 CYCCNT;
 
     MARTe::int32 OUTPUT_rotor_control_target_steps;
     MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
     MARTe::uint8 OUTPUT_gpioState;
+    MARTe::uint8 OUTPUT_break_Control_Loop;
 
+}Data_t, *Data;
+#pragma pack(pop)
+
+class RxDataFrame {
+ public:    
+    RxDataFrame();
+    MARTe::int32 positionRotor;
+    MARTe::float32 positionEncoder;
+    MARTe::uint32  Pwm1Counter;
+    MARTe::uint32 CYCCNT;
+
+    MARTe::int32 OUTPUT_rotor_control_target_steps;
+    MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
+    MARTe::uint8 OUTPUT_gpioState;
+    MARTe::uint8 OUTPUT_break_Control_Loop;
 };
 
 /**

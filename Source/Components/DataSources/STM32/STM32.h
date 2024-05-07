@@ -29,12 +29,11 @@ struct STM32OutSignals {
 #pragma pack(push, 1)
 struct STM32InSignals { 
     STM32InSignals();
-    // MARTe::uint16 dac1_data;
-    // MARTe::uint16 dac2_data;
 
     MARTe::int32 control_target_steps;
     MARTe::uint32 Pwm1Period;
     MARTe::uint8 gpioState;
+    MARTe::uint8 break_Control_Loop;
 
 };
 #pragma pack(pop)

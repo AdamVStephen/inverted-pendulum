@@ -13,15 +13,18 @@ namespace MFI {
 
 InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
 
-   INPUT_encoder_position_steps  = NULL_PTR(int32*);
+   INPUT_encoder_position  = NULL_PTR(float32*);
    INPUT_rotor_position_steps    = NULL_PTR(int32*);
    INPUT_L6474_Board_Pwm1Counter = NULL_PTR(uint32*);
    INPUT_CYCCNT                  = NULL_PTR(uint32*);
    INPUT_message_count           = NULL_PTR(uint32*);
+   INPUT_state                   = NULL_PTR(uint8*);
 
    OUTPUT_rotor_control_target_steps    = NULL_PTR(int32*);
    OUTPUT_gpioState                     = NULL_PTR(uint8*);
    OUTPUT_L6474_Board_Pwm1Period        = NULL_PTR(uint32*);
+   OUTPUT_break_Control_Loop            = NULL_PTR(uint8*);
+   //OUTPUT_state                         = NULL_PTR(uint8*);
 
 }
 
@@ -29,9 +32,9 @@ InvertedPendulumGAM::~InvertedPendulumGAM() {
 
 }
 
-void InvertedPendulumGAM::show_error(){
-     REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
-}
+// void InvertedPendulumGAM::show_error( bool isError = false){
+//      REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
+// }
 
 void InvertedPendulumGAM::control_logic_Initialise() {
     /* Initialize reset state indicating that reset has occurred */
@@ -140,32 +143,32 @@ void InvertedPendulumGAM::control_logic_Initialise() {
 	current_error_steps = (float*)malloc(sizeof(float));
 	if (current_error_steps == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
-        show_error();
+        REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 	}
 	current_error_rotor_steps = (float*)malloc(sizeof(float));
 	if (current_error_rotor_steps == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
-		show_error();
+		REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 	}
 	sample_period = (float*)malloc(sizeof(float));
 	if (sample_period == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
-		show_error();
+		REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 	}
 	deriv_lp_corner_f = (float*)malloc(sizeof(float));
 	if (sample_period == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
-		show_error();
+		REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 	}
 	deriv_lp_corner_f_rotor = (float*)malloc(sizeof(float));
 	if (sample_period == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
-		show_error();
+		REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 	}
 	sample_period_rotor = (float*)malloc(sizeof(float));
 	if (sample_period == NULL) {
 		sprintf(msg_display, "Memory allocation error\r\n");
-		show_error();
+		REPORT_ERROR(ErrorManagement::ParametersError, msg_display);
 	}
 
 	
@@ -258,24 +261,21 @@ void InvertedPendulumGAM::control_logic_Initialise_interactive(){
     /* Start timer for configuration command read loop */
     // tick_read_cycle_start = HAL_GetTick();
     // /* Configuration command read loop */
-    // user_configuration();
+     user_configuration();
 
 
     /* Report configuration values */
-    if (ACCEL_CONTROL == 0){
-        sprintf(msg_display, "\n\rMotor Profile Speeds Set at Min %u Max %u Steps per Second", min_speed, max_speed);
-        show_error();
-    }
-    if (select_suspended_mode == 0){
-        sprintf(msg_display, "\n\rInverted Pendulum Mode Selected");
-        show_error();
-    }
-    if (select_suspended_mode == 1){
-        sprintf(msg_display, "\n\rSuspended Pendulum Mode Selected");
-        show_error();
-    }
+    // if (ACCEL_CONTROL == 0){
+    //     sprintf(msg_display, "\n\rMotor Profile Speeds Set at Min %u Max %u Steps per Second", min_speed, max_speed);
+    // }
+    // if (select_suspended_mode == 0){
+    //     sprintf(msg_display, "\n\rInverted Pendulum Mode Selected");
+    // }
+    // if (select_suspended_mode == 1){
+    //     sprintf(msg_display, "\n\rSuspended Pendulum Mode Selected");
+    // }
 
-    sprintf(msg_display, "\n\rMotor Torque Current Set at %0.1f mA", torq_current_val);
+    // sprintf(msg_display, "\n\rMotor Torque Current Set at %0.1f mA", torq_current_val);
   
 
     // /* Motor Control Characterization Test*/
@@ -748,12 +748,12 @@ void InvertedPendulumGAM::control_logic_Initialise_interactive(){
         /* Initialize position and motion variables */
         max_encoder_position = 0;
         global_max_encoder_position = 0;
-        peaked = 0;
-        handled_peak = 0;
-        swing_up_state = 0;
-        swing_up_state_prev = 0;
-        zero_crossed = 0;
-        stage_count = 0;
+        //peaked = 0;
+        //handled_peak = 0;
+        //swing_up_state = 0;
+        //swing_up_state_prev = 0;
+        //zero_crossed = 0;
+        //stage_count = 0;
         /* Select initial amplitude for rotor impulse */
         stage_amp = STAGE_0_AMP;
 
@@ -838,12 +838,12 @@ void InvertedPendulumGAM::control_logic_Initialise_interactive(){
 
     enable_control_action = 1;
 
-    // if (ACCEL_CONTROL == 1) {
-    //     BSP_MotorControl_HardStop(0);
-    //     L6474_CmdEnable(0);
-    //     target_velocity_prescaled = 0;
-    //     L6474_Board_SetDirectionGpio(0, BACKWARD);
-    // }
+    if (ACCEL_CONTROL == 1) {
+        // BSP_MotorControl_HardStop(0);
+        // L6474_CmdEnable(0);
+        target_velocity_prescaled = 0;
+        // L6474_Board_SetDirectionGpio(0, BACKWARD);
+    }
 
     /*
         * Set Torque Current to value for normal operation
@@ -862,7 +862,7 @@ void InvertedPendulumGAM::control_logic_Initialise_interactive(){
 
 }
 
-void InvertedPendulumGAM::control_logic() {
+bool InvertedPendulumGAM::control_logic() {
     /*
         *
         * Restore user selected control parameters after completion of Swing Up and if Angle Calibration
@@ -870,10 +870,14 @@ void InvertedPendulumGAM::control_logic() {
         *
         */
 
-   MARTe::uint32 encoder_position_steps  = *INPUT_encoder_position_steps;
+   encoder_position  = *INPUT_encoder_position;
    MARTe::uint32 rotor_position_steps    = *INPUT_rotor_position_steps;
    MARTe::uint32 L6474_Board_Pwm1Counter = *INPUT_L6474_Board_Pwm1Counter;
    MARTe::uint32 CYCCNT                  = *INPUT_CYCCNT;
+   MARTe::uint8 state                    = *INPUT_state;
+
+//set the exit_control_loop falg
+   *OUTPUT_break_Control_Loop = 0u;
 
     if (enable_swing_up == 1 && i == SWING_UP_CONTROL_CONFIG_DELAY && enable_angle_cal == 0){
         PID_Rotor.Kp = init_r_p_gain;
@@ -1001,37 +1005,41 @@ void InvertedPendulumGAM::control_logic() {
 
     /*  Detect pendulum position excursion exceeding limits and exit */
 
-    if(select_suspended_mode == 0){
-        if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) > ENCODER_POSITION_POSITIVE_LIMIT) {
-            sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
-            show_error();
-            //##################TO REVISIT QUIT HERE##################################
-            //break;
-        }
-        if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) < ENCODER_POSITION_NEGATIVE_LIMIT) {
-            sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
-            show_error();
-            //##################TO REVISIT QUIT HERE##################################
-            //break;
-        }
+    // if(select_suspended_mode == 0){
+    //     if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) > ENCODER_POSITION_POSITIVE_LIMIT) {
+    //         //sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
+    //         *OUTPUT_break_Control_Loop = 1u;
+    //         return false;
+    //         //##################TO REVISIT QUIT HERE##################################
+    //         //break;
+    //     }
+    //     if (((encoder_position)/ ENCODER_READ_ANGLE_SCALE) < ENCODER_POSITION_NEGATIVE_LIMIT) {
+    //         //sprintf(msg_display, "Error Exit Encoder Position Exceeded: %i\r\n", encoder_position_steps);
+    //         *OUTPUT_break_Control_Loop = 1u;
+    //         return false;
+    //         //##################TO REVISIT QUIT HERE##################################
+    //         //break;
+    //     }
 
-    }
+    // }
 
-    /* Detect rotor position excursion exceeding limits and exit */
+    // /* Detect rotor position excursion exceeding limits and exit */
 
-    if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
-        show_error();
-        //##################TO REVISIT QUIT HERE##################################
-        //break;
-    }
+    // if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
+    //     sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+    //     *OUTPUT_break_Control_Loop = 1u;
+    //     return false;
+    //     //##################TO REVISIT QUIT HERE##################################
+    //     //break;
+    // }
 
-    if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
-        show_error();
-        //##################TO REVISIT QUIT HERE##################################
-        //break;
-    }
+    // if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
+    //     sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+    //     *OUTPUT_break_Control_Loop = 1u;
+    //     return false;
+    //     //##################TO REVISIT QUIT HERE##################################
+    //     //break;
+    // }
 
     /*
         * Encoder Angle Error Compensation
@@ -1827,7 +1835,7 @@ void InvertedPendulumGAM::control_logic() {
 
     i++;
 
-
+    return true;
 		
 }
 
@@ -1977,11 +1985,11 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "encoder_position_steps", InputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "encoder_position", InputSignals, Float32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            INPUT_encoder_position_steps = (int32*) GetInputSignalMemory(signalIdx);
+            INPUT_encoder_position = (float32*) GetInputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal encoder_position_steps");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal encoder_position");
         }
     }
     if (ok) {    
@@ -2012,7 +2020,7 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfOutputSignals = GetNumberOfOutputSignals();
-        ok = (nOfOutputSignals == 3u); // Will need to be changed if any output signals are added or removed
+        ok = (nOfOutputSignals == 4u); // Will need to be changed if any output signals are added or removed
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of output signals must be 3", gam_name.Buffer());
         }
@@ -2041,7 +2049,14 @@ bool InvertedPendulumGAM::Setup() {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal L6474_Board_Pwm1Period");
         }
     }
-    
+    if (ok) {    
+        ok = GAMCheckSignalProperties(*this, "break_Control_Loop", OutputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
+        if (ok) {
+            OUTPUT_break_Control_Loop = (uint8*) GetOutputSignalMemory(signalIdx);
+        } else {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal break_Control_Loop");
+        }
+    }
 
     return ok;
 }
@@ -2145,11 +2160,53 @@ void InvertedPendulumGAM::assign_mode_3(arm_pid_instance_a_f32 *PID_Pend, arm_pi
 	//L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
 }
 
+/*
+ * Configure system based on user selection
+ */
+
+void InvertedPendulumGAM::user_configuration(void){
+
+	enable_rotor_actuator_test = 0;
+	enable_rotor_actuator_control = 0;
+	enable_encoder_test = 0;
+	enable_rotor_actuator_high_speed_test = 0;
+	enable_motor_actuator_characterization_mode = 0;
+	enable_full_sysid = 0;
+
+	enable_rotor_tracking_comb_signal = 0;
+	rotor_track_comb_amplitude = 0;
+	enable_disturbance_rejection_step = 0;
+	enable_noise_rejection_step = 0;
+	enable_sensitivity_fnc_step = 0;
+
+//############## Jawad Modification  -->> ###############################
+	enable_state_feedback = 0;
+	select_suspended_mode = 0;
+	proportional = 		PRIMARY_PROPORTIONAL_MODE_1;
+	integral = 			PRIMARY_INTEGRAL_MODE_1;
+	derivative = 		PRIMARY_DERIVATIVE_MODE_1;
+	rotor_p_gain = 		SECONDARY_PROPORTIONAL_MODE_1;
+	rotor_i_gain = 		SECONDARY_INTEGRAL_MODE_1;
+	rotor_d_gain = 		SECONDARY_DERIVATIVE_MODE_1;
+	max_speed = 		MAX_SPEED_MODE_1;
+	min_speed = 		MIN_SPEED_MODE_1;
+	enable_rotor_plant_design = 0;
+	enable_rotor_plant_gain_design = 0;
+	enable_rotor_position_step_response_cycle = 0;
+	enable_pendulum_position_impulse_response_cycle = 0;
+	enable_rotor_chirp = 0;
+	enable_mod_sin_rotor_tracking = 1;
+	enable_angle_cal = 1;
+	enable_swing_up = 1;
+	
+}
 
 bool InvertedPendulumGAM::Execute() {
 
-    if( *INPUT_message_count > 0)
-        control_logic();
+    if( *INPUT_message_count > 0){
+        if( !control_logic() )
+             control_logic_Initialise_interactive();
+    }
     return true;
 }
 
