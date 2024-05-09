@@ -468,7 +468,20 @@ namespace MFI {
    } arm_pid_instance_a_f32;
 
 
-enum MOTOR_DIRECTION { FORWARD=1, BACKWARD };
+//enum MOTOR_DIRECTION { FORWARD=1, BACKWARD };
+/// Direction options
+typedef enum {
+  BACKWARD = 0,
+  FORWARD = 1,
+  UNKNOW_DIR = ((uint8_t)0xFF)
+} MOTOR_DIRECTION;
+
+typedef enum {
+  STATE_INITIALIZATION = 0,
+  STATE_SWING_UP = 1,
+  STATE_MAIN = 2
+} STATE;
+
 
 class InvertedPendulumGAM : public MARTe::GAM {
  public:
@@ -477,9 +490,15 @@ class InvertedPendulumGAM : public MARTe::GAM {
     InvertedPendulumGAM();
     virtual ~InvertedPendulumGAM();
 
-   bool control_logic();
+   bool control_logic_State_Main();
+
+   bool control_logic_State_SwingingUp();
+   void control_logic_State_SwingingUp_Prepare();
+
+   void control_logic_State_Initialization();
+   
    void control_logic_Initialise();
-   void control_logic_Initialise_interactive();
+   int encoder_position_read(int *encoder_position, int encoder_position_init );
 
    void pid_filter_control_execute(arm_pid_instance_a_f32 *PID, float * current_error, float * sample_period, float * Deriv_Filt);
 
@@ -499,14 +518,15 @@ class InvertedPendulumGAM : public MARTe::GAM {
  private:
    
     //ADCSample prev_sample;
-
+   STATE state;
    //********************############### Input Signals #########################*************************************
-   MARTe::float32* INPUT_encoder_position;
-   MARTe::int32* INPUT_rotor_position_steps;
+   //MARTe::float32* INPUT_encoder_position;
+   MARTe::int32*  INPUT_rotor_position_steps;
    MARTe::uint32* INPUT_L6474_Board_Pwm1Counter;
    MARTe::uint32* INPUT_CYCCNT;
    MARTe::uint32* INPUT_message_count;
-   MARTe::uint8* INPUT_state;
+   MARTe::uint32* INPUT_encoder_counter;
+   //MARTe::uint8* INPUT_state;
    //********************########################################################*************************************
 
    //********************############### Out Signals #########################*************************************
@@ -517,7 +537,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    MARTe::uint8* OUTPUT_gpioState;
    MARTe::uint32* OUTPUT_L6474_Board_Pwm1Period;
    MARTe::uint8* OUTPUT_break_Control_Loop;
-   //MARTe::uint8* OUTPUT_state;
+   MARTe::uint8* OUTPUT_state;
    //********************########################################################*************************************
 
 
@@ -643,8 +663,8 @@ class InvertedPendulumGAM : public MARTe::GAM {
    uint32_t cnt3;
    int range_error;
    float encoder_position;
-   //int encoder_position_steps;
-   //int encoder_position_init;
+   int encoder_position_steps;
+   int encoder_position_init;
    int previous_encoder_position;
    int max_encoder_position;
    int global_max_encoder_position;
@@ -674,11 +694,10 @@ class InvertedPendulumGAM : public MARTe::GAM {
    bool peaked;
    bool handled_peak;
    int zero_crossed;
-   //motorDir_t swing_up_direction;
+   MOTOR_DIRECTION swing_up_direction;
    int swing_up_state, swing_up_state_prev;
    int stage_count;
    int stage_amp;
-
 
 
    /* Low pass filter variables */
