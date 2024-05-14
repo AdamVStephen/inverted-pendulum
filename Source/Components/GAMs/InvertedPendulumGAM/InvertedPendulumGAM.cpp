@@ -924,6 +924,7 @@ void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
 bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 
     
+        *OUTPUT_rotor_control_target_steps= 0;
 		/* Enter Swing Up Loop */
 		//while (1)
 		//{
@@ -2376,7 +2377,7 @@ bool InvertedPendulumGAM::Execute() {
     
     *OUTPUT_state = state;
             
-    return ret;
+    return true;
 }
 
 bool oppositeSigns(int x, int y) {

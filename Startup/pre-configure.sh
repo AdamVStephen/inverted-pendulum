@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+TARGET=x86-linux
 if [ -z ${MARTe2_DIR+x} ]; then echo "Please set the MARTe2_DIR environment variable"; exit; fi
 if [ -z ${MARTe2_Components_DIR+x} ]; then echo "Please set the MARTe2_Components_DIR environment variable"; exit; fi
 

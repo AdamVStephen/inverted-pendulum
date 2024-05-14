@@ -46,7 +46,8 @@ STM32InSignals::STM32InSignals():
                         control_target_steps(0),
                          Pwm1Period(0u),
                          gpioState(0u),
-                         break_Control_Loop(0u)
+                         break_Control_Loop(0u),
+                         state(0u)
 {
 
 }
@@ -135,12 +136,12 @@ bool STM32::Initialise(MARTe::StructuredDataI& data) {
         }
       
         // Configure the serial port for low latency operation
-        if (ok) {
-            struct serial_struct srl;
-            ioctl(serial_fd, TIOCGSERIAL, &srl);
-            srl.flags |= ASYNC_LOW_LATENCY;
-            ioctl(serial_fd, TIOCSSERIAL, &srl);
-        }
+        // if (ok) {
+        //     struct serial_struct srl;
+        //     ioctl(serial_fd, TIOCGSERIAL, &srl);
+        //     srl.flags |= ASYNC_LOW_LATENCY;
+        //     ioctl(serial_fd, TIOCSSERIAL, &srl);
+        // }
     }
     
     return ok;
@@ -182,7 +183,7 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
     else if (signalIdx == 7u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.positionRotor);
     } else if (signalIdx == 8u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.positionEncoder);
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.encoder_counter);
     } else if (signalIdx == 9u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.Pwm1Counter);
     } else if (signalIdx == 10u) {
@@ -200,15 +201,19 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
         signalAddress = reinterpret_cast<void *>(&tx_signals.Pwm1Period);
     }else if (signalIdx == 14u) {
         signalAddress = reinterpret_cast<void *>(&tx_signals.break_Control_Loop);
+    }else if (signalIdx == 15u) {
+        signalAddress = reinterpret_cast<void *>(&tx_signals.state);
     } 
-    else if (signalIdx == 15u) {
+    else if (signalIdx == 16u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_rotor_control_target_steps);
-    } else if (signalIdx == 16u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_gpioState);
     } else if (signalIdx == 17u) {
-        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_L6474_Board_Pwm1Period);
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_gpioState);
     } else if (signalIdx == 18u) {
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_L6474_Board_Pwm1Period);
+    } else if (signalIdx == 19u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_break_Control_Loop);
+    } else if (signalIdx == 20u) {
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_state);
     } 
     // else if (signalIdx == 7u) {
     //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.adc_time);
@@ -278,9 +283,9 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     bool ok = DataSourceI::SetConfiguredDatabase(data);
     
     if (ok) {
-        ok = (GetNumberOfSignals() == 19u);
+        ok = (GetNumberOfSignals() == 21u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 19 signals should be specified");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 21 signals should be specified");
         }
     }
     
@@ -342,9 +347,9 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 8u, Float32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 8u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal positionEncoder");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal encoder_counter");
         }
     }
     if (ok) {
@@ -389,31 +394,43 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal break_Control_Loop");
         }
     }
+    if (ok) {
+        ok = DataSourceCheckSignalProperties(*this, 15u, UnsignedInteger8Bit, 0u, 1u);
+        if (!ok) {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal state");
+        }
+    }
 
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 15u, SignedInteger32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 16u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_rotor_control_target_steps");
         }
     }
     
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 16u, UnsignedInteger8Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 17u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_gpioState");
         }
     }
 
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 17u, UnsignedInteger32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 18u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_L6474_Board_Pwm1Period");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 18u, UnsignedInteger8Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 19u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_break_Control_Loop");
+        }
+    }
+    if (ok) {
+        ok = DataSourceCheckSignalProperties(*this, 20u, UnsignedInteger8Bit, 0u, 1u);
+        if (!ok) {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal OUTPUT_state");
         }
     }
     
@@ -531,14 +548,15 @@ bool STM32::TxSynchronise() {
     //uint16 tx_buffer;
      //tx_buffer = tx_signals.control_target_steps;
 
-    // STM32InSignals sg;
-    // sg.control_target_steps=120;
-    // sg.gpioState=5;
-    // sg.Pwm1Period=987;
-    // sg.break_Control_Loop=43;
-    // int ret = write(serial_fd, &sg, sizeof(sg));
+    STM32InSignals sg;
+    sg.control_target_steps=2;
+    sg.gpioState=2;
+    sg.Pwm1Period=2;
+    sg.break_Control_Loop=2;
+    sg.state=5;
+    int ret = write(serial_fd, &sg, sizeof(sg));
 
-    int ret = write(serial_fd, &tx_signals, sizeof(tx_signals));
+    //int ret = write(serial_fd, &tx_signals, sizeof(tx_signals));
 
     rx_signals.message_tx_time = HighResolutionTimer::Counter();
 

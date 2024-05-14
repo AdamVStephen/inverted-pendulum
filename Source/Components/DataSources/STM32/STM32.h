@@ -34,7 +34,7 @@ struct STM32InSignals {
     MARTe::uint32 Pwm1Period;
     MARTe::uint8 gpioState;
     MARTe::uint8 break_Control_Loop;
-
+    MARTe::uint8 state;
 };
 #pragma pack(pop)
 
