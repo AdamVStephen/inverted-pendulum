@@ -866,6 +866,27 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
 }
 
 void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
+
+    /* Calibrate down angle */
+
+    /*
+        * Initialize Pendulum Angle Read offset by setting encoder_position_init
+        */
+
+    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+    encoder_position_init = encoder_position_steps;
+
+    if (ret == -1) {
+        //sprintf( tmp_string, "Encoder Position Under Range Error\r\n");
+    }
+    if (ret == 1) {
+        //sprintf( tmp_string, "Encoder Position Over Range Error\r\n");
+    }
+
+    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+    encoder_position_down = encoder_position_steps;
+    //sprintf( tmp_string, "Pendulum Initial Angle %i\r\n", encoder_position_steps);
+
     /*
         * Apply controller parameters for initial operation at completion of
         * Swing Up
@@ -956,15 +977,15 @@ bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 					stage_count++;
 
 					if (prev_global_max_encoder_position != global_max_encoder_position && stage_count > 4){
-					if (abs(global_max_encoder_position) < 600){
-						stage_amp = STAGE_0_AMP;
-					}
-					if (abs(global_max_encoder_position) >= 600 && abs(global_max_encoder_position) < 1000){
-						stage_amp = STAGE_1_AMP;
-					}
-					if (abs(global_max_encoder_position) >= 1000){
-						stage_amp = STAGE_2_AMP;
-					}
+                        if (abs(global_max_encoder_position) < 600){
+                            stage_amp = STAGE_0_AMP;
+                        }
+                        if (abs(global_max_encoder_position) >= 600 && abs(global_max_encoder_position) < 1000){
+                            stage_amp = STAGE_1_AMP;
+                        }
+                        if (abs(global_max_encoder_position) >= 1000){
+                            stage_amp = STAGE_2_AMP;
+                        }
 					}
 					prev_global_max_encoder_position = global_max_encoder_position;
 					global_max_encoder_position = 0;
@@ -2353,6 +2374,7 @@ bool InvertedPendulumGAM::Execute() {
 
     //MARTe::uint8 state                    = *INPUT_state;
     MARTe::uint32 message_count           =  *INPUT_message_count;
+
 
     bool  ret = true;
     if( message_count > 0){

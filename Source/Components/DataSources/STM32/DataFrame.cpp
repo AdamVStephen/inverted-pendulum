@@ -62,19 +62,19 @@ namespace MFI {
             uint8 temp[RX_FRAME_SIZE];
             buffer.dequeue(temp, RX_FRAME_SIZE);
             //ParseRxDataFramePayload(temp + sizeof(SYNC_BYTES), dataframe);
-            // ParseRxDataFramePayload(temp, dataframe);
+             ParseRxDataFramePayload(temp, dataframe);
 
-            Data d = (Data)temp;
+            // Data d = (Data)temp;
             
-            dataframe.positionRotor = d->positionRotor; 
-            dataframe.encoder_counter =  d->encoder_counter;
-            dataframe.Pwm1Counter =  d->Pwm1Counter;
-            dataframe.CYCCNT =  d->CYCCNT;
-            dataframe.OUTPUT_rotor_control_target_steps =  d->OUTPUT_rotor_control_target_steps;
-            dataframe.OUTPUT_L6474_Board_Pwm1Period =  d->OUTPUT_L6474_Board_Pwm1Period;
-            dataframe.OUTPUT_gpioState =  d->OUTPUT_gpioState;
-            dataframe.OUTPUT_break_Control_Loop = d->OUTPUT_break_Control_Loop;
-            dataframe.OUTPUT_state = d->OUTPUT_state;
+            // dataframe.positionRotor = d->positionRotor; 
+            // dataframe.encoder_counter =  d->encoder_counter;
+            // dataframe.Pwm1Counter =  d->Pwm1Counter;
+            // dataframe.CYCCNT =  d->CYCCNT;
+            // dataframe.OUTPUT_rotor_control_target_steps =  d->OUTPUT_rotor_control_target_steps;
+            // dataframe.OUTPUT_L6474_Board_Pwm1Period =  d->OUTPUT_L6474_Board_Pwm1Period;
+            // dataframe.OUTPUT_gpioState =  d->OUTPUT_gpioState;
+            // dataframe.OUTPUT_break_Control_Loop = d->OUTPUT_break_Control_Loop;
+            // dataframe.OUTPUT_state = d->OUTPUT_state;
 
             return true;
         }
@@ -143,7 +143,7 @@ namespace MFI {
             dataframe.OUTPUT_break_Control_Loop =   static_cast<uint8>(raw[25]);
             dataframe.OUTPUT_state =   static_cast<uint8>(raw[26]);
 
-        
+            int ch  = 1;
 
         }   
 

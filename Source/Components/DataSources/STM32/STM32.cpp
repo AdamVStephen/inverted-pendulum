@@ -136,12 +136,12 @@ bool STM32::Initialise(MARTe::StructuredDataI& data) {
         }
       
         // Configure the serial port for low latency operation
-        // if (ok) {
-        //     struct serial_struct srl;
-        //     ioctl(serial_fd, TIOCGSERIAL, &srl);
-        //     srl.flags |= ASYNC_LOW_LATENCY;
-        //     ioctl(serial_fd, TIOCSSERIAL, &srl);
-        // }
+        if (ok) {
+            struct serial_struct srl;
+            ioctl(serial_fd, TIOCGSERIAL, &srl);
+            srl.flags |= ASYNC_LOW_LATENCY;
+            ioctl(serial_fd, TIOCSSERIAL, &srl);
+        }
     }
     
     return ok;
@@ -549,11 +549,11 @@ bool STM32::TxSynchronise() {
      //tx_buffer = tx_signals.control_target_steps;
 
     STM32InSignals sg;
-    sg.control_target_steps=2;
-    sg.gpioState=2;
-    sg.Pwm1Period=2;
-    sg.break_Control_Loop=2;
-    sg.state=5;
+    sg.control_target_steps=1;
+    sg.gpioState=1u;
+    sg.Pwm1Period=1;
+    sg.break_Control_Loop=1u;
+    sg.state=1u;
     int ret = write(serial_fd, &sg, sizeof(sg));
 
     //int ret = write(serial_fd, &tx_signals, sizeof(tx_signals));
