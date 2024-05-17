@@ -59,10 +59,10 @@ namespace MFI {
                 return false;
             }
 
-            uint8 temp[RX_FRAME_SIZE];
+            uint8 temp[RX_FRAME_SIZE] = {'\0'};
             buffer.dequeue(temp, RX_FRAME_SIZE);
-            //ParseRxDataFramePayload(temp + sizeof(SYNC_BYTES), dataframe);
-             ParseRxDataFramePayload(temp, dataframe);
+            ParseRxDataFramePayload(temp + sizeof(SYNC_BYTES), dataframe);
+            //ParseRxDataFramePayload(temp, dataframe);
 
             // Data d = (Data)temp;
             
@@ -143,7 +143,7 @@ namespace MFI {
             dataframe.OUTPUT_break_Control_Loop =   static_cast<uint8>(raw[25]);
             dataframe.OUTPUT_state =   static_cast<uint8>(raw[26]);
 
-            int ch  = 1;
+            //int ch  = 1;
 
         }   
 

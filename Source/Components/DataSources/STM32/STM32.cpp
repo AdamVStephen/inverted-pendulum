@@ -498,7 +498,7 @@ bool STM32::RxSynchronise() {
     }
     
     while (1) {           
-        uint8 temp_rx_buffer[STM32_BUFSIZE];
+        uint8 temp_rx_buffer[STM32_BUFSIZE] ; //temp_rx_buffer[STM32_BUFSIZE];
         
         // Blocking read
         int ret = read(serial_fd, temp_rx_buffer, sizeof(temp_rx_buffer));
@@ -524,9 +524,10 @@ bool STM32::RxSynchronise() {
         for (uint32 frame = 0; frame < STM32_BUFSIZE / DataFrame::RX_FRAME_SIZE; frame++) {
             // Sanitise the rx_buffer - delete any leading rogue bytes that cannot be part of an STM32
             // Rx data frame
-           // rx_signals.discarded_byte_count += DataFrame::SanitiseRxBuffer(rx_buffer);
+           rx_signals.discarded_byte_count += DataFrame::SanitiseRxBuffer(rx_buffer);
 
             //DataFrame::RxDataFrame dataframe;
+            //printf("Checkinng");
             if (DataFrame::GetNextRxDataFrame(rx_buffer, rx_signals.dataframe)) {
                 rx_signals.message_count++;
                 rx_signals.message_rx_time = HighResolutionTimer::Counter();
@@ -548,15 +549,19 @@ bool STM32::TxSynchronise() {
     //uint16 tx_buffer;
      //tx_buffer = tx_signals.control_target_steps;
 
-    STM32InSignals sg;
-    sg.control_target_steps=1;
-    sg.gpioState=1u;
-    sg.Pwm1Period=1;
-    sg.break_Control_Loop=1u;
-    sg.state=1u;
-    int ret = write(serial_fd, &sg, sizeof(sg));
+    // STM32InSignals sg;
+    // sg.control_target_steps=1;
+    // sg.gpioState=2u;
+    // sg.Pwm1Period=3u;
+    // sg.break_Control_Loop=4u;
+    // sg.state=5u;
+    // int ret = write(serial_fd, &sg, sizeof(sg));
 
-    //int ret = write(serial_fd, &tx_signals, sizeof(tx_signals));
+    // uint8 buff[ sizeof(sg) ];
+    // memcpy(buff, &sg, sizeof(sg) );
+
+    int ret = write(serial_fd, &tx_signals, sizeof(tx_signals));
+   
 
     rx_signals.message_tx_time = HighResolutionTimer::Counter();
 

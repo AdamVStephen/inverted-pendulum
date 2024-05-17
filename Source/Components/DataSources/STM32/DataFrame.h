@@ -8,7 +8,7 @@ namespace MFI {
 namespace DataFrame {
 
 extern const MARTe::uint8 SYNC_BYTES[4];
-const MARTe::uint32 RX_FRAME_SIZE = 27u; //20;
+const MARTe::uint32 RX_FRAME_SIZE = 27u + 4u; //20;
 
 /**
  * @brief Remove any leading non-message bytes from the buffer

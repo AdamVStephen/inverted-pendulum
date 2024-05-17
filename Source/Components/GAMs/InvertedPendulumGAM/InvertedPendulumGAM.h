@@ -477,9 +477,9 @@ typedef enum {
 } MOTOR_DIRECTION;
 
 typedef enum {
-  STATE_INITIALIZATION = 0,
-  STATE_SWING_UP = 1,
-  STATE_MAIN = 2
+  STATE_INITIALIZATION = 0u,
+  STATE_SWING_UP = 1u,
+  STATE_MAIN = 2u
 } STATE;
 
 
