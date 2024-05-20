@@ -471,8 +471,8 @@ namespace MFI {
 //enum MOTOR_DIRECTION { FORWARD=1, BACKWARD };
 /// Direction options
 typedef enum {
-  BACKWARD = 0,
-  FORWARD = 1,
+  BACKWARD = 0u,
+  FORWARD = 1u,
   UNKNOW_DIR = ((uint8_t)0xFF)
 } MOTOR_DIRECTION;
 
@@ -523,7 +523,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    //MARTe::float32* INPUT_encoder_position;
    MARTe::int32*  INPUT_rotor_position_steps;
    MARTe::uint32* INPUT_L6474_Board_Pwm1Counter;
-   MARTe::uint32* INPUT_CYCCNT;
+   //MARTe::uint32* INPUT_CYCCNT;
    MARTe::uint32* INPUT_message_count;
    MARTe::uint32* INPUT_encoder_counter;
    //MARTe::uint8* INPUT_state;
@@ -693,7 +693,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    int enable_swing_up_resp;
    bool peaked;
    bool handled_peak;
-   int zero_crossed;
+   bool zero_crossed;
    MOTOR_DIRECTION swing_up_direction;
    int swing_up_state, swing_up_state_prev;
    int stage_count;

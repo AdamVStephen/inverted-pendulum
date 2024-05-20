@@ -8,7 +8,7 @@ namespace MFI {
 namespace DataFrame {
 
 extern const MARTe::uint8 SYNC_BYTES[4];
-const MARTe::uint32 RX_FRAME_SIZE = 27u + 4u; //20;
+const MARTe::uint32 RX_FRAME_SIZE = 12u + 4u; //20;
 
 /**
  * @brief Remove any leading non-message bytes from the buffer
@@ -26,13 +26,13 @@ typedef struct  {
     MARTe::int32 positionRotor;
     MARTe::uint32 encoder_counter;
     MARTe::uint32  Pwm1Counter;
-    MARTe::uint32 CYCCNT;
+    // MARTe::uint32 CYCCNT;
 
-    MARTe::int32 OUTPUT_rotor_control_target_steps;
-    MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
-    MARTe::uint8 OUTPUT_gpioState;
-    MARTe::uint8 OUTPUT_break_Control_Loop;
-    MARTe::uint8 OUTPUT_state;
+    // MARTe::int32 OUTPUT_rotor_control_target_steps;
+    // MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
+    // MARTe::uint8 OUTPUT_gpioState;
+    // MARTe::uint8 OUTPUT_break_Control_Loop;
+    // MARTe::uint8 OUTPUT_state;
 
 }Data_t, *Data;
 #pragma pack(pop)

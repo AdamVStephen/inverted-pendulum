@@ -10,13 +10,13 @@ namespace MFI {
          RxDataFrame::RxDataFrame():
             positionRotor(0), 
             encoder_counter(0u), 
-            Pwm1Counter(0u), 
-            CYCCNT(0u), 
-            OUTPUT_rotor_control_target_steps(0), 
-            OUTPUT_L6474_Board_Pwm1Period(0u), 
-            OUTPUT_gpioState(0u), 
-            OUTPUT_break_Control_Loop(0u),
-            OUTPUT_state(0u)
+            Pwm1Counter(0u)
+            // CYCCNT(0u), 
+            // OUTPUT_rotor_control_target_steps(0), 
+            // OUTPUT_L6474_Board_Pwm1Period(0u), 
+            // OUTPUT_gpioState(0u), 
+            // OUTPUT_break_Control_Loop(0u),
+            // OUTPUT_state(0u)
         {
                           
         }
@@ -121,27 +121,27 @@ namespace MFI {
                                  (static_cast<uint32>(raw[10]) << 16) +
                                  (static_cast<uint32>(raw[11]) << 24);
 
-            dataframe.CYCCNT =   static_cast<uint32>(raw[12]) +
-                                 (static_cast<uint32>(raw[13]) << 8)+
-                                 (static_cast<uint32>(raw[14]) << 16) +
-                                 (static_cast<uint32>(raw[15]) << 24);
+            // dataframe.CYCCNT =   static_cast<uint32>(raw[12]) +
+            //                      (static_cast<uint32>(raw[13]) << 8)+
+            //                      (static_cast<uint32>(raw[14]) << 16) +
+            //                      (static_cast<uint32>(raw[15]) << 24);
 
             //dataframe.OUTPUT_rotor_control_target_steps = bytesToFloat(raw[16], raw[17], raw[18], raw[19]);
-            dataframe.OUTPUT_rotor_control_target_steps =   
-                                 static_cast<int32>(raw[16]) +
-                                 (static_cast<int32>(raw[17]) << 8)+
-                                 (static_cast<int32>(raw[18]) << 16) +
-                                 (static_cast<int32>(raw[19]) << 24);
+            // dataframe.OUTPUT_rotor_control_target_steps =   
+            //                      static_cast<int32>(raw[16]) +
+            //                      (static_cast<int32>(raw[17]) << 8)+
+            //                      (static_cast<int32>(raw[18]) << 16) +
+            //                      (static_cast<int32>(raw[19]) << 24);
 
-            dataframe.OUTPUT_L6474_Board_Pwm1Period =   
-                                 static_cast<uint32>(raw[20]) +
-                                 (static_cast<uint32>(raw[21]) << 8)+
-                                 (static_cast<uint32>(raw[22]) << 16) +
-                                 (static_cast<uint32>(raw[23]) << 24);
+            // dataframe.OUTPUT_L6474_Board_Pwm1Period =   
+            //                      static_cast<uint32>(raw[20]) +
+            //                      (static_cast<uint32>(raw[21]) << 8)+
+            //                      (static_cast<uint32>(raw[22]) << 16) +
+            //                      (static_cast<uint32>(raw[23]) << 24);
                                 
-            dataframe.OUTPUT_gpioState =   static_cast<uint8>(raw[24]);
-            dataframe.OUTPUT_break_Control_Loop =   static_cast<uint8>(raw[25]);
-            dataframe.OUTPUT_state =   static_cast<uint8>(raw[26]);
+            // dataframe.OUTPUT_gpioState =   static_cast<uint8>(raw[24]);
+            // dataframe.OUTPUT_break_Control_Loop =   static_cast<uint8>(raw[25]);
+            // dataframe.OUTPUT_state =   static_cast<uint8>(raw[26]);
 
             //int ch  = 1;
 

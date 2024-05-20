@@ -16,7 +16,7 @@ InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
    //INPUT_encoder_position  = NULL_PTR(float32*);
    INPUT_rotor_position_steps    = NULL_PTR(int32*);
    INPUT_L6474_Board_Pwm1Counter = NULL_PTR(uint32*);
-   INPUT_CYCCNT                  = NULL_PTR(uint32*);
+   //INPUT_CYCCNT                  = NULL_PTR(uint32*);
    INPUT_message_count           = NULL_PTR(uint32*);
    //INPUT_state                   = NULL_PTR(uint8*);
    INPUT_encoder_counter        = NULL_PTR(uint32*);
@@ -45,13 +45,13 @@ void InvertedPendulumGAM::control_logic_Initialise() {
 	reset_state = 1;
 
 	/* initialize Integrator Mode time variables */
-	apply_acc_start_time = 0;
-	clock_int_time = 0;
-	clock_int_tick = 0;
+	apply_acc_start_time = 0u;
+	clock_int_time = 0u;
+	clock_int_tick = 0u;
 
 	/* Initialize PWM period variables used by step interrupt */
-	desired_pwm_period = 0;
-	current_pwm_period = 0;
+	desired_pwm_period = 0u;
+	current_pwm_period = 0u;
 	target_velocity_prescaled = 0;
 
 	/* Initialize default start mode and reporting mode */
@@ -59,9 +59,9 @@ void InvertedPendulumGAM::control_logic_Initialise() {
 	report_mode = 1;
 
 	/*Initialize serial read variables */
-	RxBuffer_ReadIdx = 0;
-	RxBuffer_WriteIdx = 0;
-	readBytes = 0;
+	RxBuffer_ReadIdx = 0u;
+	RxBuffer_WriteIdx = 0u;
+	readBytes = 0u;
 
 	/*Initialize encoder variables */
 	encoder_position = 0;
@@ -111,10 +111,10 @@ void InvertedPendulumGAM::control_logic_Initialise() {
 
 	
 	/* Default Starting Control Configuration */
-	max_accel = MAX_ACCEL;
-	max_decel = MAX_DECEL;
-	max_speed = MAX_SPEED_MODE_1;
-	min_speed = MIN_SPEED_MODE_1;
+	max_accel = (uint16_t) MAX_ACCEL;
+	max_decel = (uint16_t) MAX_DECEL;
+	max_speed = (uint16_t) MAX_SPEED_MODE_1;
+	min_speed = (uint16_t) MIN_SPEED_MODE_1;
 	
     /* Default torque current */
     /* ##########################**** MODIFY ****##################################
@@ -395,7 +395,7 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         */
 
     /* Setting enable_control_action enables control loop */
-    enable_control_action = ENABLE_CONTROL_ACTION;
+    enable_control_action = (uint32_t)ENABLE_CONTROL_ACTION;
 
     /*
         * Set Motor Position Zero occuring only once after reset and suppressed thereafter
@@ -839,7 +839,7 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         * *************************************************************************************************
         */
 
-    enable_control_action = 1;
+    enable_control_action = 1u;
 
     if (ACCEL_CONTROL == 1) {
         // BSP_MotorControl_HardStop(0);
@@ -921,7 +921,7 @@ void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
     max_encoder_position = 0;
     global_max_encoder_position = 0;
     peaked = 0;
-    handled_peak = 0;
+    handled_peak = false;
     swing_up_state = 0;
     swing_up_state_prev = 0;
     zero_crossed = 0;
@@ -967,7 +967,7 @@ bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 
 			if (zero_crossed)
 			{//
-				zero_crossed = 0;
+				zero_crossed = false;
 				// Push it aka put some more kinetic energy into the pendulum
 				if (swing_up_state == 0){
 					//BSP_MotorControl_Move(0, swing_up_direction, stage_amp);
@@ -989,6 +989,7 @@ bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 					}
 					prev_global_max_encoder_position = global_max_encoder_position;
 					global_max_encoder_position = 0;
+                    return false;
 					//ret = encoder_position_read(&encoder_position_steps, encoder_position_init, &htim3);
 				}
 			}
@@ -998,7 +999,7 @@ bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 			if (peaked && !handled_peak)
 			{
 				// Ensure we only enter this branch one per peak
-				handled_peak = 1;
+				handled_peak = true;
 				// Reset maximum encoder value to reassess after crossing the bottom
 				max_encoder_position = 0;
 				// Switch motor direction
@@ -1019,7 +1020,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
    //encoder_position  = *INPUT_encoder_position;
    MARTe::uint32 rotor_position_steps    = *INPUT_rotor_position_steps;
    MARTe::uint32 L6474_Board_Pwm1Counter = *INPUT_L6474_Board_Pwm1Counter;
-   MARTe::uint32 CYCCNT                  = *INPUT_CYCCNT;
+   //MARTe::uint32 CYCCNT                  = *INPUT_CYCCNT;
    
 
 //set the exit_control_loop falg
@@ -2005,7 +2006,7 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 	 * Add time reporting
 	 */
 
-	apply_acc_start_time = *INPUT_CYCCNT;
+	//apply_acc_start_time = *INPUT_CYCCNT;
 
      
 	MOTOR_DIRECTION old_dir = *target_velocity_prescaled > 0 ? FORWARD : BACKWARD;
@@ -2057,6 +2058,7 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 	}else
         *OUTPUT_gpioState = ((uint8_t)0xFF) ;
 
+    *OUTPUT_L6474_Board_Pwm1Period =0u;
 	if (current_pwm_period_local != 0) {
 		uint32_t pwm_count = *INPUT_L6474_Board_Pwm1Counter;
 		uint32_t pwm_time_left = current_pwm_period_local - pwm_count;
@@ -2115,7 +2117,7 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfInputSignals = GetNumberOfInputSignals();
-        ok = (nOfInputSignals == 5u); // Will need to be changed if any input signals are added or removed
+        ok = (nOfInputSignals == 4u); // Will need to be changed if any input signals are added or removed
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 5", gam_name.Buffer());
         }
@@ -2153,14 +2155,14 @@ bool InvertedPendulumGAM::Setup() {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal L6474_Board_Pwm1Counter ");
         }
     }
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "CYCCNT", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            INPUT_CYCCNT = (uint32*) GetInputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal CYCCNT ");
-        }
-    }
+    // if (ok) {    
+    //     ok = GAMCheckSignalProperties(*this, "CYCCNT", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+    //     if (ok) {
+    //         INPUT_CYCCNT = (uint32*) GetInputSignalMemory(signalIdx);
+    //     } else {
+    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal CYCCNT ");
+    //     }
+    // }
     // if (ok) {    
     //     ok = GAMCheckSignalProperties(*this, "state", InputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
     //     if (ok) {
@@ -2237,7 +2239,7 @@ bool InvertedPendulumGAM::Setup() {
 
 void InvertedPendulumGAM::pid_filter_control_execute(arm_pid_instance_a_f32 *PID, float * current_error, float * sample_period, float * Deriv_Filt) {
 
-		float int_term, diff, diff_filt;
+	float int_term, diff, diff_filt;
 
 	  /* Compute time integral of error by trapezoidal rule */
 	  int_term = PID->Ki*(*sample_period)*((*current_error) + PID->state_a[0])/2;
@@ -2357,8 +2359,8 @@ void InvertedPendulumGAM::user_configuration(void){
 	rotor_p_gain = 		SECONDARY_PROPORTIONAL_MODE_1;
 	rotor_i_gain = 		SECONDARY_INTEGRAL_MODE_1;
 	rotor_d_gain = 		SECONDARY_DERIVATIVE_MODE_1;
-	max_speed = 		MAX_SPEED_MODE_1;
-	min_speed = 		MIN_SPEED_MODE_1;
+	max_speed =(uint16_t)MAX_SPEED_MODE_1;
+	min_speed =(uint16_t)MIN_SPEED_MODE_1;
 	enable_rotor_plant_design = 0;
 	enable_rotor_plant_gain_design = 0;
 	enable_rotor_position_step_response_cycle = 0;
@@ -2377,7 +2379,7 @@ bool InvertedPendulumGAM::Execute() {
 
 
     bool  ret = true;
-    if( message_count > 0){
+    if( message_count > 0u){
         if( state == STATE_INITIALIZATION){
             control_logic_State_Initialization();
             state = STATE_SWING_UP;
@@ -2392,6 +2394,10 @@ bool InvertedPendulumGAM::Execute() {
         if( state == STATE_MAIN ) {// main state 
             ret = control_logic_State_Main();
             if( !ret ){//state change
+                if (ACCEL_CONTROL == 1) {
+                    desired_pwm_period = 0u;
+                    current_pwm_period = 0u;
+                }
                 state = STATE_INITIALIZATION;
             }
         }
@@ -2412,7 +2418,7 @@ int InvertedPendulumGAM::encoder_position_read(int *encoder_position, int encode
 
     uint32 cnt3 = *INPUT_encoder_counter;
 
-	if (cnt3 >= 32768) {
+	if (cnt3 >= 32768u) {
 		*encoder_position = (int) (cnt3);
 		*encoder_position = *encoder_position - 65536;
 	} else {
@@ -2439,8 +2445,8 @@ int InvertedPendulumGAM::encoder_position_read(int *encoder_position, int encode
 
 	if (oppositeSigns(*encoder_position, previous_encoder_position))
 	{
-		peaked = 0;
-		zero_crossed = 1;
+		peaked = false;
+		zero_crossed = true;
 	}
 
 	if (!peaked) // We don't need to evaluate anymore if we hit a maximum when we're still in downward motion and didn't cross the minimum
@@ -2458,8 +2464,8 @@ int InvertedPendulumGAM::encoder_position_read(int *encoder_position, int encode
 		else
 		{
 			// We are at the peak and disable further checks until we traversed the minimum position again
-			peaked = 1;
-			handled_peak = 0;
+			peaked = false;
+		    zero_crossed = true;
 		}
 	}
 
