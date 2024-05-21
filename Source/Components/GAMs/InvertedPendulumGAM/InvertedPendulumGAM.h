@@ -517,7 +517,6 @@ class InvertedPendulumGAM : public MARTe::GAM {
 
  private:
    
-    //ADCSample prev_sample;
    STATE state;
    //********************############### Input Signals #########################*************************************
    //MARTe::float32* INPUT_encoder_position;
@@ -539,35 +538,6 @@ class InvertedPendulumGAM : public MARTe::GAM {
    MARTe::uint8* OUTPUT_break_Control_Loop;
    MARTe::uint8* OUTPUT_state;
    //********************########################################################*************************************
-
-
-   //  MARTe::uint32 count;
-    
-   //  MARTe::uint32 input_data_rate;
-
-   //  MARTe::uint32 output_data_rate;
-    
-   //  MARTe::uint16* in_adc1_data;
-
-   //  MARTe::uint16* in_adc2_data;
-
-   //  MARTe::uint32* in_adc_time_seconds;
-
-   //  MARTe::uint32* in_adc_time_microseconds;
-
-   //  MARTe::uint8* in_validity;
-
-   //  MARTe::uint32* out_count;
-    
-   //  MARTe::uint16* out_adc1_data;
-           
-   //  MARTe::uint16* out_adc2_data;
-
-   //  MARTe::uint32* out_adc_time_seconds;
-
-   //  MARTe::uint32* out_adc_time_microseconds;
-
-   //  MARTe::uint8* out_validity;
 
    // volatile uint16_t gLastError;
    /* Private function prototypes -----------------------------------------------*/

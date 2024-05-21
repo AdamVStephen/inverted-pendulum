@@ -39,16 +39,9 @@ public:
     virtual ~InvertedPendulumGAMTest();
 
     /**
-     * @brief Test error message of InvertedPendulumGAM::Initialise()
+     * @brief Test the PIDGAM::Execute() with two inputs and only the proportional term.
      */
-    bool TestInitialiseMissingKpKiKd();
-
-    /**
-     * @brief Test error message of InvertedPendulumGAM::Initialise()
-     */
-    bool TestInitialiseMissingSampleTime();
-
-    
+    bool TestExecuteStateSwapUp();
 
 };
 

@@ -24,19 +24,10 @@
 /*---------------------------------------------------------------------------*/
 using namespace MARTe;
 
-TEST(PIDGAMGTest,TestInitialiseMissingKpKiKd) {
-    PIDGAMTest test;
-    ASSERT_TRUE(test.TestInitialiseMissingKpKiKd());
+TEST(InvertedPendulumGAMTest,TestExecuteStateSwapUp) {
+    InvertedPendulumGAMTest test;
+    ASSERT_TRUE(test.TestExecuteStateSwapUp());
 }
 
-TEST(PIDGAMGTest,TestInitialiseMissingSampleTime) {
-    PIDGAMTest test;
-    ASSERT_TRUE(test.TestInitialiseMissingSampleTime());
-}
-
-TEST(PIDGAMGTest,TestInitialiseWrongSampleTime) {
-    PIDGAMTest test;
-    ASSERT_TRUE(test.TestInitialiseWrongSampleTime());
-}
 
 
