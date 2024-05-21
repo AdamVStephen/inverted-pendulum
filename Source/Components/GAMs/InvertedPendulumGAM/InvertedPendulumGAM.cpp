@@ -2048,7 +2048,9 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 	float desired_pwm_period_float = roundf(RCC_SYS_CLOCK_FREQ / speed_prescaled);
 	if (!(desired_pwm_period_float < 4294967296.0f)) {
 		desired_pwm_period_local = UINT_MAX;
-	} else {
+	}else if( desired_pwm_period_float == 0){
+        desired_pwm_period_local  = 1;
+    } else {
 		desired_pwm_period_local = (uint32_t)(desired_pwm_period_float);
 	}
 
@@ -2464,8 +2466,8 @@ int InvertedPendulumGAM::encoder_position_read(int *encoder_position, int encode
 		else
 		{
 			// We are at the peak and disable further checks until we traversed the minimum position again
-			peaked = false;
-		    zero_crossed = true;
+			peaked = true;
+		    handled_peak = false;
 		}
 	}
 
