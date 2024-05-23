@@ -478,8 +478,9 @@ typedef enum {
 
 typedef enum {
   STATE_INITIALIZATION = 0u,
-  STATE_SWING_UP = 1u,
-  STATE_MAIN = 2u
+  STATE_PENDULUM_STABLIZATION = 1u,
+  STATE_SWING_UP = 2u,
+  STATE_MAIN = 3u
 } STATE;
 
 
@@ -491,6 +492,12 @@ class InvertedPendulumGAM : public MARTe::GAM {
     virtual ~InvertedPendulumGAM();
 
    bool control_logic_State_Main();
+   void control_logic_State_Main_Prepare();
+
+   bool control_logic_State_PendulumStablisation();
+   void control_logic_State_PendulumStablisation_Prepare();
+   int control_logic_State_PendulumStablisation_testCount;
+   bool control_logic_State_PendulumStablisation_isSecondRead;
 
    bool control_logic_State_SwingingUp();
    void control_logic_State_SwingingUp_Prepare();
@@ -608,7 +615,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    /* Pendulum position and tracking command */
 
    /* Rotor position and tracking command */
-   //int rotor_position_steps;
+   int rotor_position_steps;
    float rotor_position_command_steps;
    float rotor_position_command_steps_pf, rotor_position_command_steps_pf_prev;
    float rotor_position_command_deg;
@@ -616,7 +623,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    float rotor_position_diff, rotor_position_diff_prev;
    float rotor_position_diff_filter, rotor_position_diff_filter_prev;
    int rotor_target_in_steps;
-   //int initial_rotor_position;
+   int initial_rotor_position;
 
    /* Rotor Plant Design variables */
    int select_rotor_plant_design, enable_rotor_plant_design, enable_rotor_plant_gain_design;

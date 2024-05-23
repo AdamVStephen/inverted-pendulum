@@ -596,6 +596,36 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         * Initialize Primary and Secondary PID controllers
         */
 
+    
+}
+
+void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
+
+    /* Calibrate down angle */
+
+    /*
+        * Initialize Pendulum Angle Read offset by setting encoder_position_init
+        */
+
+    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+    encoder_position_init = encoder_position_steps;
+
+    if (ret == -1) {
+        //sprintf( tmp_string, "Encoder Position Under Range Error\r\n");
+    }
+    if (ret == 1) {
+        //sprintf( tmp_string, "Encoder Position Over Range Error\r\n");
+    }
+
+    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+    encoder_position_down = encoder_position_steps;
+    //sprintf( tmp_string, "Pendulum Initial Angle %i\r\n", encoder_position_steps);
+
+    /*
+        * Apply controller parameters for initial operation at completion of
+        * Swing Up
+    */
+
     *current_error_steps = 0;
     *current_error_rotor_steps = 0;
     PID_Pend.state_a[0] = 0;
@@ -751,12 +781,12 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         /* Initialize position and motion variables */
         max_encoder_position = 0;
         global_max_encoder_position = 0;
-        //peaked = 0;
-        //handled_peak = 0;
-        //swing_up_state = 0;
-        //swing_up_state_prev = 0;
-        //zero_crossed = 0;
-        //stage_count = 0;
+        peaked = 0;
+        handled_peak = 0;
+        swing_up_state = 0;
+        swing_up_state_prev = 0;
+        zero_crossed = 0;
+        stage_count = 0;
         /* Select initial amplitude for rotor impulse */
         stage_amp = STAGE_0_AMP;
 
@@ -768,7 +798,7 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         //HAL_UART_Transmit(&huart2, (uint8_t*) msg_display, strlen(msg_display), HAL_MAX_DELAY);
 
         // /* Initiate first swing */
-        // swing_up_direction = FORWARD;
+        swing_up_direction = FORWARD;
         // BSP_MotorControl_Move(0, swing_up_direction, 150);
         // BSP_MotorControl_WaitWhileActive(0);
 
@@ -839,7 +869,17 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         * *************************************************************************************************
         */
 
-    enable_control_action = 1u;
+}
+
+void InvertedPendulumGAM::control_logic_State_PendulumStablisation_Prepare(){
+    encoder_position_init = 0;
+    encoder_position_prev=-1;
+    control_logic_State_PendulumStablisation_testCount = 0;
+    control_logic_State_PendulumStablisation_isSecondRead = false;
+}
+
+void InvertedPendulumGAM::control_logic_State_Main_Prepare(){
+       // enable_control_action = 1u;
 
     if (ACCEL_CONTROL == 1) {
         // BSP_MotorControl_HardStop(0);
@@ -857,89 +897,32 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
     // target_cpu_cycle = DWT->CYCCNT;
     // prev_cpu_cycle = DWT->CYCCNT;
 
-    // ret = encoder_position_read(&encoder_position_steps, encoder_position_init, &htim3);
-    // if (select_suspended_mode == 0) {
-    //     encoder_position = encoder_position_steps - encoder_position_down - (int)(180 * angle_scale);
-    //     encoder_position = encoder_position - encoder_position_offset;
-    // }
+    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+    if (select_suspended_mode == 0) {
+        encoder_position = encoder_position_steps - encoder_position_down - (int)(180 * angle_scale);
+        encoder_position = encoder_position - encoder_position_offset;
+    }
 
 }
-
-void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
-
-    /* Calibrate down angle */
-
-    /*
-        * Initialize Pendulum Angle Read offset by setting encoder_position_init
-        */
+bool InvertedPendulumGAM::control_logic_State_PendulumStablisation() {
 
     ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
-    encoder_position_init = encoder_position_steps;
 
-    if (ret == -1) {
-        //sprintf( tmp_string, "Encoder Position Under Range Error\r\n");
+    if( control_logic_State_PendulumStablisation_isSecondRead ){
+        encoder_position_curr = encoder_position_steps;
+        control_logic_State_PendulumStablisation_isSecondRead = false; 
+    }else{
+        encoder_position_prev = encoder_position_steps;
+        control_logic_State_PendulumStablisation_isSecondRead = true;
     }
-    if (ret == 1) {
-        //sprintf( tmp_string, "Encoder Position Over Range Error\r\n");
+
+    if( (encoder_position_prev == encoder_position_curr)){  
+        control_logic_State_PendulumStablisation_testCount++;   
+        if(control_logic_State_PendulumStablisation_testCount == 2)
+            return true;
     }
-
-    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
-    encoder_position_down = encoder_position_steps;
-    //sprintf( tmp_string, "Pendulum Initial Angle %i\r\n", encoder_position_steps);
-
-    /*
-        * Apply controller parameters for initial operation at completion of
-        * Swing Up
-    */
-
-    PID_Rotor.Kp = 20;
-    PID_Rotor.Ki = 10;
-    PID_Rotor.Kd = 10;
-    PID_Pend.Kp = 300;
-    PID_Pend.Ki = 0.0;
-    PID_Pend.Kd = 30.0;
-    enable_state_feedback = 0;
-    integral_compensator_gain = 0;
-    feedforward_gain = 1;
-    rotor_position_command_steps = 0;
-    enable_state_feedback = 0;
-    enable_disturbance_rejection_step = 0;
-    enable_sensitivity_fnc_step = 0;
-    enable_noise_rejection_step = 0;
-    enable_rotor_plant_design = 0;
-    enable_rotor_plant_gain_design = 0;
-
-    /* Set Torque Current value to 800 mA (normal operation will revert to 400 mA */
-    //torq_current_val = MAX_TORQUE_SWING_UP;
-    //L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
-
-    //sprintf(msg, "Pendulum Swing Up Starting\r\n");
-    //SendGAMInput( COMMAND_INDEX_SEND_STATUS_INFO );
-    //HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), HAL_MAX_DELAY);
-
-    /* Initialize position and motion variables */
-    max_encoder_position = 0;
-    global_max_encoder_position = 0;
-    peaked = 0;
-    handled_peak = false;
-    swing_up_state = 0;
-    swing_up_state_prev = 0;
-    zero_crossed = 0;
-    stage_count = 0;
-    /* Select initial amplitude for rotor impulse */
-    stage_amp = STAGE_0_AMP;
-
-    /* Optional encoder state reporting */
-    //sprintf(tmp_string,"Current Position %0.2f\r\n", (encoder_position - encoder_position_down)/angle_scale);
-    //HAL_UART_Transmit(&huart2, (uint8_t*) tmp_string, strlen(tmp_string), HAL_MAX_DELAY);
-
-    //sprintf(tmp_string,"Current Position Down %0.2f\r\n", encoder_position_down/angle_scale);
-    //HAL_UART_Transmit(&huart2, (uint8_t*) tmp_string, strlen(tmp_string), HAL_MAX_DELAY);
-
-    /* Initiate first swing */
-    swing_up_direction = FORWARD;
-    //BSP_MotorControl_Move(0, swing_up_direction, 150);
-    //BSP_MotorControl_WaitWhileActive(0);
+    
+    return false;
 }
 
 bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
@@ -1018,8 +1001,8 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
         */
 
    //encoder_position  = *INPUT_encoder_position;
-   MARTe::uint32 rotor_position_steps    = *INPUT_rotor_position_steps;
-   MARTe::uint32 L6474_Board_Pwm1Counter = *INPUT_L6474_Board_Pwm1Counter;
+   
+   //MARTe::uint32 L6474_Board_Pwm1Counter = *INPUT_L6474_Board_Pwm1Counter;
    //MARTe::uint32 CYCCNT                  = *INPUT_CYCCNT;
    
 
@@ -1277,7 +1260,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
 
    //##################TO REVISIT ##################################
     //ret = rotor_position_read(&rotor_position_steps);
-
+    rotor_position_steps    = *INPUT_rotor_position_steps;
     /* Optional rotor position filter */
 
     rotor_position_filter_steps = (float) (rotor_position_steps) * iir_0 + rotor_position_steps_prev * iir_1
@@ -1932,7 +1915,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
         //     show_error();
         // }
         report_mode = report_mode + 1;
-
+        
     }
 
 
@@ -2379,18 +2362,31 @@ bool InvertedPendulumGAM::Execute() {
     //MARTe::uint8 state                    = *INPUT_state;
     MARTe::uint32 message_count           =  *INPUT_message_count;
 
+    //reset all outputs
+   *OUTPUT_rotor_control_target_steps=0;
+   *OUTPUT_gpioState = UNKNOW_DIR;
+   *OUTPUT_L6474_Board_Pwm1Period = 0;
+   *OUTPUT_break_Control_Loop = 0;
 
     bool  ret = true;
     if( message_count > 0u){
         if( state == STATE_INITIALIZATION){
             control_logic_State_Initialization();
-            state = STATE_SWING_UP;
-            control_logic_State_SwingingUp_Prepare();
+            state = STATE_PENDULUM_STABLIZATION;
+            control_logic_State_PendulumStablisation_Prepare();
+        }
+        if( state == STATE_PENDULUM_STABLIZATION){
+            ret = control_logic_State_PendulumStablisation();
+            if( ret ){
+                state = STATE_SWING_UP;
+                control_logic_State_SwingingUp_Prepare();
+            }
         }
         if( state == STATE_SWING_UP){ //initialisation state
             ret = control_logic_State_SwingingUp();
             if( ret ){//state change
                 state = STATE_MAIN;
+                control_logic_State_Main_Prepare();
             }
         }
         if( state == STATE_MAIN ) {// main state 
