@@ -581,7 +581,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
 
    /* Control system variables */
    int rotor_position_delta;
-   int initial_rotor_position;
+   //int initial_rotor_position;
    int cycle_count;
    int i, j, k, m;
    int ret;

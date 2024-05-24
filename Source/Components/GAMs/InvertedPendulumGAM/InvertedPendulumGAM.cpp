@@ -601,25 +601,7 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
 
 void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
 
-    /* Calibrate down angle */
-
-    /*
-        * Initialize Pendulum Angle Read offset by setting encoder_position_init
-        */
-
-    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
-    encoder_position_init = encoder_position_steps;
-
-    if (ret == -1) {
-        //sprintf( tmp_string, "Encoder Position Under Range Error\r\n");
-    }
-    if (ret == 1) {
-        //sprintf( tmp_string, "Encoder Position Over Range Error\r\n");
-    }
-
-    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
-    encoder_position_down = encoder_position_steps;
-    //sprintf( tmp_string, "Pendulum Initial Angle %i\r\n", encoder_position_steps);
+    
 
     /*
         * Apply controller parameters for initial operation at completion of
@@ -897,16 +879,30 @@ void InvertedPendulumGAM::control_logic_State_Main_Prepare(){
     // target_cpu_cycle = DWT->CYCCNT;
     // prev_cpu_cycle = DWT->CYCCNT;
 
-    ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
-    if (select_suspended_mode == 0) {
-        encoder_position = encoder_position_steps - encoder_position_down - (int)(180 * angle_scale);
-        encoder_position = encoder_position - encoder_position_offset;
-    }
+    // ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+    // if (select_suspended_mode == 0) {
+    //     encoder_position = encoder_position_steps - encoder_position_down - (int)(180 * angle_scale);
+    //     encoder_position = encoder_position - encoder_position_offset;
+    // }
 
 }
 bool InvertedPendulumGAM::control_logic_State_PendulumStablisation() {
 
     ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
+
+    /* Calibrate down angle */
+    if( control_logic_State_PendulumStablisation_testCount == 2 ){
+        control_logic_State_PendulumStablisation_testCount++;
+         /*
+            * Initialize Pendulum Angle Read offset by setting encoder_position_init
+        */
+        encoder_position_init = encoder_position_steps; 
+        return false; 
+
+    }else if( control_logic_State_PendulumStablisation_testCount == 3 ){
+        encoder_position_down = encoder_position_steps;
+        return true;
+    }
 
     if( control_logic_State_PendulumStablisation_isSecondRead ){
         encoder_position_curr = encoder_position_steps;
@@ -918,10 +914,11 @@ bool InvertedPendulumGAM::control_logic_State_PendulumStablisation() {
 
     if( (encoder_position_prev == encoder_position_curr)){  
         control_logic_State_PendulumStablisation_testCount++;   
-        if(control_logic_State_PendulumStablisation_testCount == 2)
-            return true;
+        // if(control_logic_State_PendulumStablisation_testCount == 2)
+        //     return true;
     }
-    
+ 
+
     return false;
 }
 
@@ -1004,7 +1001,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
    
    //MARTe::uint32 L6474_Board_Pwm1Counter = *INPUT_L6474_Board_Pwm1Counter;
    //MARTe::uint32 CYCCNT                  = *INPUT_CYCCNT;
-   
+   rotor_position_steps    = *INPUT_rotor_position_steps;
 
 //set the exit_control_loop falg
    *OUTPUT_break_Control_Loop = 0u;
@@ -1066,26 +1063,26 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
     // }
 
     /* Set mode 1 if user request detected */
-    if (mode_index_command == 1 && mode_transition_state == 1) {
-        mode_index = 1;
-        mode_transition_state = 0;
-        mode_index_command = 0;
-        assign_mode_1(&PID_Pend, &PID_Rotor);
-    }
-    /* Set mode 3 if user request detected */
-    if (mode_index_command == 2 && mode_transition_state == 1) {
-        mode_index = 2;
-        mode_transition_state = 0;
-        mode_index_command = 0;
-        assign_mode_2(&PID_Pend, &PID_Rotor);
-    }
-    /* Set mode 3 if user request detected */
-    if (mode_index_command == 3 && mode_transition_state == 1) {
-        mode_index = 3;
-        mode_transition_state = 0;
-        mode_index_command = 0;
-        assign_mode_3(&PID_Pend, &PID_Rotor);
-    }
+    // if (mode_index_command == 1 && mode_transition_state == 1) {
+    //     mode_index = 1;
+    //     mode_transition_state = 0;
+    //     mode_index_command = 0;
+    //     assign_mode_1(&PID_Pend, &PID_Rotor);
+    // }
+    // /* Set mode 3 if user request detected */
+    // if (mode_index_command == 2 && mode_transition_state == 1) {
+    //     mode_index = 2;
+    //     mode_transition_state = 0;
+    //     mode_index_command = 0;
+    //     assign_mode_2(&PID_Pend, &PID_Rotor);
+    // }
+    // /* Set mode 3 if user request detected */
+    // if (mode_index_command == 3 && mode_transition_state == 1) {
+    //     mode_index = 3;
+    //     mode_transition_state = 0;
+    //     mode_index_command = 0;
+    //     assign_mode_3(&PID_Pend, &PID_Rotor);
+    // }
     /* End of Real time user configuration and mode assignment read loop */
 
 
@@ -1155,7 +1152,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
     // /* Detect rotor position excursion exceeding limits and exit */
 
     if (rotor_position_steps > (ROTOR_POSITION_POSITIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+        // sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
         *OUTPUT_break_Control_Loop = 1u;
         return false;
         //##################TO REVISIT QUIT HERE##################################
@@ -1163,7 +1160,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
     }
 
     if (rotor_position_steps < (ROTOR_POSITION_NEGATIVE_LIMIT * STEPPER_READ_POSITION_STEPS_PER_DEGREE)) {
-        sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
+        // sprintf(msg_display, "Error Exit Motor Position Exceeded: %i\r\n", rotor_position_steps);
         *OUTPUT_break_Control_Loop = 1u;
         return false;
         //##################TO REVISIT QUIT HERE##################################
@@ -1260,7 +1257,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
 
    //##################TO REVISIT ##################################
     //ret = rotor_position_read(&rotor_position_steps);
-    rotor_position_steps    = *INPUT_rotor_position_steps;
+    
     /* Optional rotor position filter */
 
     rotor_position_filter_steps = (float) (rotor_position_steps) * iir_0 + rotor_position_steps_prev * iir_1
@@ -1472,7 +1469,6 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
         */
 
     if (enable_angle_cal == 1){
-
         /*
             * Angle Calibration system state values applied during Angle Calibration
             * Period.  User selected system state values restored after Angle Calibration
@@ -2375,7 +2371,7 @@ bool InvertedPendulumGAM::Execute() {
             state = STATE_PENDULUM_STABLIZATION;
             control_logic_State_PendulumStablisation_Prepare();
         }
-        if( state == STATE_PENDULUM_STABLIZATION){
+        else if( state == STATE_PENDULUM_STABLIZATION){
             ret = control_logic_State_PendulumStablisation();
             if( ret ){
                 state = STATE_SWING_UP;
@@ -2389,7 +2385,7 @@ bool InvertedPendulumGAM::Execute() {
                 control_logic_State_Main_Prepare();
             }
         }
-        if( state == STATE_MAIN ) {// main state 
+        else if( state == STATE_MAIN ) {// main state 
             ret = control_logic_State_Main();
             if( !ret ){//state change
                 if (ACCEL_CONTROL == 1) {

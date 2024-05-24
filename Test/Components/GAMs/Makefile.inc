@@ -1,5 +1,4 @@
-SPB    = DownsamplingGAM.x\ 
-InvertedPendulumGAM.x 
+SPB    = DownsamplingGAM.x
 
 PACKAGE=Components
 ROOT_DIR=../../..
@@ -8,7 +7,6 @@ MAKEDEFAULTDIR=$(MARTe2_DIR)/MakeDefaults
 include $(MAKEDEFAULTDIR)/MakeStdLibDefs.$(TARGET)
 
 LIBRARIES_STATIC+=$(BUILD_DIR)/DownsamplingGAM/DownsamplingGAMTest$(LIBEXT)
-LIBRARIES_STATIC+=$(BUILD_DIR)/InvertedPendulumGAM/InvertedPendulumGAMTest$(LIBEXT)
 
 all: $(OBJS) $(SUBPROJ) \
     $(BUILD_DIR)/GAMsTests$(LIBEXT)
