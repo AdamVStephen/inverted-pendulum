@@ -1,4 +1,4 @@
-OBJSX= 
+OBJSX =
 
 SPB = InvertedPendulumGAM.x
 

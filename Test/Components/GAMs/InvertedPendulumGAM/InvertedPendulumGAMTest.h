@@ -25,7 +25,7 @@
 
 namespace MARTe {
 
-class InvertedPendulumGAMTest: MARTe::InvertedPendulumGAM{
+class InvertedPendulumGAMTest: MFI::InvertedPendulumGAM{
 //TODO Add the macro DLL_API to the class declaration (i.e. class DLL_API InvertedPendulumGAMTest)
 public:
     /**
