@@ -600,9 +600,6 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
 }
 
 void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
-
-    
-
     /*
         * Apply controller parameters for initial operation at completion of
         * Swing Up
