@@ -12,7 +12,7 @@
             "request": "launch",
             "program": "${env:MARTe2_DIR}/Build/x86-linux/App/MARTeApp.ex",
             "args": [
-                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit_STM32_InvertedGAM.cfg", "-s", "State1"
+                "-l", "RealTimeLoader", "-f", "/root/projects/UKAEA-Sygensys-develop/Configurations/EduKit_STM32_InvertedGAM_FileLogging.cfg", "-s", "State1"
             ],
             "stopAtEntry": false,
             "cwd": "${env:MARTe2_DIR}/Build/x86-linux/App",

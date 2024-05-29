@@ -17,7 +17,7 @@
    */
   #define M_TWOPI         (M_PI * 2.0)
    #define ACCEL_CONTROL_DATA 0		// Set to 1 for display of timing data
-   #define ACCEL_CONTROL 0 			// Set to 1 to enable acceleration control. Set to 0 to use position target control.
+   #define ACCEL_CONTROL 1 			// Set to 1 to enable acceleration control. Set to 0 to use position target control.
    #define PWM_COUNT_SAFETY_MARGIN 2
    #define MAXIMUM_ACCELERATION 131071
    #define MAXIMUM_DECELERATION 131071
