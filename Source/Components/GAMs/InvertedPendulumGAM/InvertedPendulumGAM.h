@@ -544,6 +544,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    MARTe::uint32* OUTPUT_L6474_Board_Pwm1Period;
    MARTe::uint8* OUTPUT_break_Control_Loop;
    MARTe::uint8* OUTPUT_state;
+   MARTe::float32* OUTPUT_encoder_position;
    //********************########################################################*************************************
 
    // volatile uint16_t gLastError;

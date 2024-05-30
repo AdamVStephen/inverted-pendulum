@@ -38,6 +38,7 @@ STM32OutSignals::STM32OutSignals():
                           message_rx_time(0u),
                           message_tx_time(0u),
                           rx_buffer_occupancy(0u),
+                          encoder_position(0),
                           dataframe() {
 
 }
@@ -204,6 +205,8 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
         signalAddress = reinterpret_cast<void *>(&tx_signals.break_Control_Loop);
     }else if (signalIdx == 14u) {
         signalAddress = reinterpret_cast<void *>(&tx_signals.state);
+    } else if (signalIdx == 15u) {
+        signalAddress = reinterpret_cast<void *>(&rx_signals.encoder_position);
     } 
     // else if (signalIdx == 16u) {
     //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.OUTPUT_rotor_control_target_steps);
@@ -267,9 +270,9 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     bool ok = DataSourceI::SetConfiguredDatabase(data);
     
     if (ok) {
-        ok = (GetNumberOfSignals() == 15u);
+        ok = (GetNumberOfSignals() == 16u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 21 signals should be specified");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 16 signals should be specified");
         }
     }
     

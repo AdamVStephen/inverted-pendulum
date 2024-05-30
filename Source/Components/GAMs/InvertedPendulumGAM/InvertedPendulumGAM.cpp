@@ -26,6 +26,7 @@ InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
    OUTPUT_L6474_Board_Pwm1Period        = NULL_PTR(uint32*);
    OUTPUT_break_Control_Loop            = NULL_PTR(uint8*);
    OUTPUT_state                         = NULL_PTR(uint8*);
+   OUTPUT_encoder_position              = NULL_PTR(float32*);
 
 }
 
@@ -2160,7 +2161,7 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfOutputSignals = GetNumberOfOutputSignals();
-        ok = (nOfOutputSignals == 5u); // Will need to be changed if any output signals are added or removed
+        ok = (nOfOutputSignals == 6u); // Will need to be changed if any output signals are added or removed
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of output signals must be 3", gam_name.Buffer());
         }
@@ -2206,6 +2207,15 @@ bool InvertedPendulumGAM::Setup() {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal break_Control_Loop");
         }
     }
+    if (ok) {    
+        ok = GAMCheckSignalProperties(*this, "encoder_position", OutputSignals, Float32Bit, 0u, 1u, signalIdx);
+        if (ok) {
+            OUTPUT_encoder_position = (float32*) GetOutputSignalMemory(signalIdx);
+        } else {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal encoder_position");
+        }
+    }
+
 
     return ok;
 }
@@ -2395,7 +2405,7 @@ bool InvertedPendulumGAM::Execute() {
     }
     
     *OUTPUT_state = state;
-            
+    *OUTPUT_encoder_position = encoder_position_steps;        
     return true;
 }
 
