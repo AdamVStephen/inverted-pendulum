@@ -473,7 +473,7 @@ namespace MFI {
 typedef enum {
   BACKWARD = 0u,
   FORWARD = 1u,
-  UNKNOW_DIR = ((uint8_t)0xFF)
+  UNKNOW_DIR = ((u_int8_t)0xFF)
 } MOTOR_DIRECTION;
 
 typedef enum {
@@ -547,9 +547,9 @@ class InvertedPendulumGAM : public MARTe::GAM {
    MARTe::float32* OUTPUT_encoder_position;
    //********************########################################################*************************************
 
-   // volatile uint16_t gLastError;
+   // volatile u_int16_t gLastError;
    /* Private function prototypes -----------------------------------------------*/
-   void Error_Handler(uint16_t error);
+   void Error_Handler(u_int16_t error);
    void select_mode_1(void);
    void user_configuration(void);
    void Main_StepClockHandler();
@@ -747,7 +747,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    int rotor_test_acceleration_max, swing_deceleration_max;
    int start_angle_a[20], end_angle_a[20], motion_dwell_a[20];
    int abs_encoder_position_prior, abs_encoder_position_after, abs_encoder_position_max;
-   uint16_t current_speed;
+   u_int16_t current_speed;
 
    /*Pendulum system ID variable */
    int enable_pendulum_sysid_test;
@@ -827,7 +827,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    int reset_state;
 
    /* Motor configuration */
-   uint16_t min_speed, max_speed, max_accel, max_decel;
+   u_int16_t min_speed, max_speed, max_accel, max_decel;
 
    /* Serial interface variables */
    u_int32_t RxBuffer_ReadIdx;
