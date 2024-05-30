@@ -2047,7 +2047,7 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 				pwm_time_left = effective_pwm_period; // Second method for assignment of PWM period during switching directions. This shows reduced discrete step noise.
 			}
 
-			u_int32_t new_pwm_time_left = ((uint64_t) pwm_time_left * desired_pwm_period_local) / effective_pwm_period;
+			u_int32_t new_pwm_time_left = ((u_int64_t) pwm_time_left * desired_pwm_period_local) / effective_pwm_period;
 			if (new_pwm_time_left != pwm_time_left) {
 				if (new_pwm_time_left < PWM_COUNT_SAFETY_MARGIN) {
 					new_pwm_time_left = PWM_COUNT_SAFETY_MARGIN;
