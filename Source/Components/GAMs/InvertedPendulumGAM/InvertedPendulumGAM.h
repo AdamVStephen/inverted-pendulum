@@ -557,13 +557,13 @@ class InvertedPendulumGAM : public MARTe::GAM {
    float L6474_Board_Pwm1PrescaleFreq( float freq );
 
    /* Acceleration control system variables */
-   volatile uint32_t apply_acc_start_time;
-   volatile uint32_t clock_int_time;
-   volatile uint32_t clock_int_tick;
+   volatile u_int32_t apply_acc_start_time;
+   volatile u_int32_t clock_int_time;
+   volatile u_int32_t clock_int_tick;
 
    /// PWM period variables used by step interrupt
-   volatile uint32_t desired_pwm_period;
-   volatile uint32_t current_pwm_period;
+   volatile u_int32_t desired_pwm_period;
+   volatile u_int32_t current_pwm_period;
 
    float target_velocity_prescaled;
    int32_t enable_speed_prescale;
@@ -638,7 +638,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    float fo_r, Wo_r, IWon_r, iir_0_r, iir_1_r, iir_2_r;
 
    /* Encoder position variables */
-   uint32_t cnt3;
+   u_int32_t cnt3;
    int range_error;
    float encoder_position;
    int encoder_position_steps;
@@ -702,7 +702,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
 
    /* User configuration variables */
    int clear_input;
-   uint32_t enable_control_action;
+   u_int32_t enable_control_action;
    int max_speed_read, min_speed_read;
    int select_suspended_mode;
    int motor_response_model;
@@ -812,13 +812,13 @@ class InvertedPendulumGAM : public MARTe::GAM {
 
    /* System timing variables */
 
-   uint32_t tick, tick_cycle_current, tick_cycle_previous, tick_cycle_start,
+   u_int32_t tick, tick_cycle_current, tick_cycle_previous, tick_cycle_start,
    tick_read_cycle, tick_read_cycle_start,tick_wait_start,tick_wait;
 
-   volatile uint32_t current_cpu_cycle, prev_cpu_cycle, last_cpu_cycle, target_cpu_cycle, prev_target_cpu_cycle;
+   volatile u_int32_t current_cpu_cycle, prev_cpu_cycle, last_cpu_cycle, target_cpu_cycle, prev_target_cpu_cycle;
    volatile int current_cpu_cycle_delay_relative_report;
 
-   uint32_t t_sample_cpu_cycles;
+   u_int32_t t_sample_cpu_cycles;
    float Tsample, Tsample_rotor, test_time;
    float angle_scale;
    int enable_high_speed_sampling;
@@ -830,9 +830,9 @@ class InvertedPendulumGAM : public MARTe::GAM {
    uint16_t min_speed, max_speed, max_accel, max_decel;
 
    /* Serial interface variables */
-   uint32_t RxBuffer_ReadIdx;
-   uint32_t RxBuffer_WriteIdx;
-   uint32_t readBytes;
+   u_int32_t RxBuffer_ReadIdx;
+   u_int32_t RxBuffer_WriteIdx;
+   u_int32_t readBytes;
 
 
    float init_r_p_gain;

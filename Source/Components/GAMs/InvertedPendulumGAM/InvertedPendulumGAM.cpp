@@ -179,7 +179,7 @@ void InvertedPendulumGAM::control_logic_Initialise() {
 	/* Configure controller filter and sample time parameters */
 	*deriv_lp_corner_f = DERIVATIVE_LOW_PASS_CORNER_FREQUENCY;
 	*deriv_lp_corner_f_rotor = DERIVATIVE_LOW_PASS_CORNER_FREQUENCY_ROTOR;
-	t_sample_cpu_cycles = (uint32_t) round(T_SAMPLE_DEFAULT * RCC_HCLK_FREQ);
+	t_sample_cpu_cycles = (u_int32_t) round(T_SAMPLE_DEFAULT * RCC_HCLK_FREQ);
 	Tsample = (float) t_sample_cpu_cycles / RCC_HCLK_FREQ;
 	*sample_period = Tsample;
 	Tsample_rotor = Tsample;
@@ -396,7 +396,7 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         */
 
     /* Setting enable_control_action enables control loop */
-    enable_control_action = (uint32_t)ENABLE_CONTROL_ACTION;
+    enable_control_action = (u_int32_t)ENABLE_CONTROL_ACTION;
 
     /*
         * Set Motor Position Zero occuring only once after reset and suppressed thereafter
@@ -1976,8 +1976,8 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 	 *  Stepper motor acceleration, speed, direction and position control developed by Ryan Nemiroff
 	 */
 
-	uint32_t current_pwm_period_local = current_pwm_period;
-	uint32_t desired_pwm_period_local = desired_pwm_period;
+	u_int32_t current_pwm_period_local = current_pwm_period;
+	u_int32_t desired_pwm_period_local = desired_pwm_period;
 
 	/*
 	 * Add time reporting
@@ -2020,7 +2020,7 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 	}
 
 
-	uint32_t effective_pwm_period = desired_pwm_period_local;
+	u_int32_t effective_pwm_period = desired_pwm_period_local;
 
 	float desired_pwm_period_float = roundf(RCC_SYS_CLOCK_FREQ / speed_prescaled);
 	if (!(desired_pwm_period_float < 4294967296.0f)) {
@@ -2028,7 +2028,7 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 	}else if( desired_pwm_period_float == 0){
         desired_pwm_period_local  = 1;
     } else {
-		desired_pwm_period_local = (uint32_t)(desired_pwm_period_float);
+		desired_pwm_period_local = (u_int32_t)(desired_pwm_period_float);
 	}
 
     //******************set OUTPUT
@@ -2039,15 +2039,15 @@ void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocit
 
     *OUTPUT_L6474_Board_Pwm1Period =0u;
 	if (current_pwm_period_local != 0) {
-		uint32_t pwm_count = *INPUT_L6474_Board_Pwm1Counter;
-		uint32_t pwm_time_left = current_pwm_period_local - pwm_count;
+		u_int32_t pwm_count = *INPUT_L6474_Board_Pwm1Counter;
+		u_int32_t pwm_time_left = current_pwm_period_local - pwm_count;
 		if (pwm_time_left > PWM_COUNT_SAFETY_MARGIN) {
 			if (old_dir != new_dir) {
 				// pwm_time_left = effective_pwm_period - pwm_time_left; // One method for assignment of PWM period during switching directions. This has the effect of additional discrete step noise.
 				pwm_time_left = effective_pwm_period; // Second method for assignment of PWM period during switching directions. This shows reduced discrete step noise.
 			}
 
-			uint32_t new_pwm_time_left = ((uint64_t) pwm_time_left * desired_pwm_period_local) / effective_pwm_period;
+			u_int32_t new_pwm_time_left = ((uint64_t) pwm_time_left * desired_pwm_period_local) / effective_pwm_period;
 			if (new_pwm_time_left != pwm_time_left) {
 				if (new_pwm_time_left < PWM_COUNT_SAFETY_MARGIN) {
 					new_pwm_time_left = PWM_COUNT_SAFETY_MARGIN;
