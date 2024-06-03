@@ -883,6 +883,8 @@ void InvertedPendulumGAM::control_logic_State_Main_Prepare(){
     //     encoder_position = encoder_position - encoder_position_offset;
     // }
 
+    
+
 }
 bool InvertedPendulumGAM::control_logic_State_PendulumStablisation() {
 
@@ -2254,72 +2256,6 @@ void InvertedPendulumGAM::pid_filter_control_execute(arm_pid_instance_a_f32 *PID
 
 
 /*
- * Assign operating modes for
- * 			PID Output Feedback Mode 1
- * 			PID Output Feedback Mode 2
- * 			PID Output Feedback Mode 3
- *
- * Mode assignments may be user configured below
- */
-
-void InvertedPendulumGAM::assign_mode_1(arm_pid_instance_a_f32 *PID_Pend, arm_pid_instance_a_f32 *PID_Rotor){
-	select_suspended_mode = 0;
-	proportional = PRIMARY_PROPORTIONAL_MODE_1;
-	integral = PRIMARY_INTEGRAL_MODE_1;
-	derivative = PRIMARY_DERIVATIVE_MODE_1;
-	rotor_p_gain = SECONDARY_PROPORTIONAL_MODE_1;
-	rotor_i_gain = SECONDARY_INTEGRAL_MODE_1;
-	rotor_d_gain = SECONDARY_DERIVATIVE_MODE_1;
-	PID_Pend->Kp = proportional;
-	PID_Pend->Ki = integral;
-	PID_Pend->Kd = derivative;
-	PID_Rotor->Kp = rotor_p_gain;
-	PID_Rotor->Ki = rotor_i_gain;
-	PID_Rotor->Kd = rotor_d_gain;
-	torq_current_val = MAX_TORQUE_CONFIG;
-    //##################TO REVISIT ##################################
-	//L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
-}
-
-void InvertedPendulumGAM::assign_mode_2(arm_pid_instance_a_f32 *PID_Pend, arm_pid_instance_a_f32 *PID_Rotor){
-	select_suspended_mode = 0;
-	proportional = PRIMARY_PROPORTIONAL_MODE_2;
-	integral = PRIMARY_INTEGRAL_MODE_2;
-	derivative = PRIMARY_DERIVATIVE_MODE_2;
-	rotor_p_gain = SECONDARY_PROPORTIONAL_MODE_2;
-	rotor_i_gain = SECONDARY_INTEGRAL_MODE_2;
-	rotor_d_gain = SECONDARY_DERIVATIVE_MODE_2;
-	PID_Pend->Kp = proportional;
-	PID_Pend->Ki = integral;
-	PID_Pend->Kd = derivative;
-	PID_Rotor->Kp = rotor_p_gain;
-	PID_Rotor->Ki = rotor_i_gain;
-	PID_Rotor->Kd = rotor_d_gain;
-	torq_current_val = MAX_TORQUE_CONFIG;
-    //##################TO REVISIT ##################################
-	//L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
-}
-
-void InvertedPendulumGAM::assign_mode_3(arm_pid_instance_a_f32 *PID_Pend, arm_pid_instance_a_f32 *PID_Rotor){
-	select_suspended_mode = 0;
-	proportional = PRIMARY_PROPORTIONAL_MODE_3;
-	integral = PRIMARY_INTEGRAL_MODE_3;
-	derivative = PRIMARY_DERIVATIVE_MODE_3;
-	rotor_p_gain = SECONDARY_PROPORTIONAL_MODE_3;
-	rotor_i_gain = SECONDARY_INTEGRAL_MODE_3;
-	rotor_d_gain = SECONDARY_DERIVATIVE_MODE_3;
-	PID_Pend->Kp = proportional;
-	PID_Pend->Ki = integral;
-	PID_Pend->Kd = derivative;
-	PID_Rotor->Kp = rotor_p_gain;
-	PID_Rotor->Ki = rotor_i_gain;
-	PID_Rotor->Kd = rotor_d_gain;
-	torq_current_val = MAX_TORQUE_CONFIG;
-    //##################TO REVISIT ##################################
-	//L6474_SetAnalogValue(0, L6474_TVAL, torq_current_val);
-}
-
-/*
  * Configure system based on user selection
  */
 
@@ -2378,7 +2314,7 @@ bool InvertedPendulumGAM::Execute() {
             state = STATE_PENDULUM_STABLIZATION;
             control_logic_State_PendulumStablisation_Prepare();
         }
-        else if( state == STATE_PENDULUM_STABLIZATION){
+        if( state == STATE_PENDULUM_STABLIZATION){
             ret = control_logic_State_PendulumStablisation();
             if( ret ){
                 state = STATE_SWING_UP;
@@ -2392,7 +2328,7 @@ bool InvertedPendulumGAM::Execute() {
                 control_logic_State_Main_Prepare();
             }
         }
-        else if( state == STATE_MAIN ) {// main state 
+        if( state == STATE_MAIN ) {// main state 
             ret = control_logic_State_Main();
             if( !ret ){//state change
                 if (ACCEL_CONTROL == 1) {
