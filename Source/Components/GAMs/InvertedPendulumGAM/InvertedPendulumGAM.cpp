@@ -20,6 +20,7 @@ InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
    INPUT_message_count           = NULL_PTR(uint32*);
    //INPUT_state                   = NULL_PTR(uint8*);
    INPUT_encoder_counter        = NULL_PTR(uint32*);
+   INPUT_break_Control_Loop     = NULL_PTR(uint8*);
 
    OUTPUT_rotor_control_target_steps    = NULL_PTR(int32*);
    OUTPUT_gpioState                     = NULL_PTR(uint8*);
@@ -1750,24 +1751,24 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
     rotor_position_command_steps_prev = rotor_position_command_steps;
 
     //##################TO REVISIT HARWARE CALL TO TAKE ACTION##################################
-    if (ACCEL_CONTROL == 1) {
-        if (enable_rotor_plant_design != 0){
-            rotor_control_target_steps_filter_2 = rotor_plant_gain*rotor_control_target_steps_filter_2;
-            apply_acceleration(&rotor_control_target_steps_filter_2, &target_velocity_prescaled, Tsample);
-        /* Applies if Rotor Gain defined */
-        } else if (enable_rotor_plant_gain_design == 1){
-            rotor_control_target_steps_gain = rotor_plant_gain * rotor_control_target_steps;
-            apply_acceleration(&rotor_control_target_steps_gain, &target_velocity_prescaled, Tsample);
-        /* Applies if no Rotor Design is selected */
-        } else {
-            apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
-        }
-        *OUTPUT_rotor_control_target_steps = 0;
-    } else {
-        *OUTPUT_rotor_control_target_steps = rotor_control_target_steps/2;
-        //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
-    }
-
+    // if (ACCEL_CONTROL == 1) {
+    //     if (enable_rotor_plant_design != 0){
+    //         rotor_control_target_steps_filter_2 = rotor_plant_gain*rotor_control_target_steps_filter_2;
+    //         apply_acceleration(&rotor_control_target_steps_filter_2, &target_velocity_prescaled, Tsample);
+    //     /* Applies if Rotor Gain defined */
+    //     } else if (enable_rotor_plant_gain_design == 1){
+    //         rotor_control_target_steps_gain = rotor_plant_gain * rotor_control_target_steps;
+    //         apply_acceleration(&rotor_control_target_steps_gain, &target_velocity_prescaled, Tsample);
+    //     /* Applies if no Rotor Design is selected */
+    //     } else {
+    //         apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
+    //     }
+    //     *OUTPUT_rotor_control_target_steps = 0;
+    // } else {
+    //     *OUTPUT_rotor_control_target_steps = rotor_control_target_steps/2;
+    //     //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
+    // }
+    *OUTPUT_rotor_control_target_steps = rotor_control_target_steps;
     /*
         * *************************************************************************************************
         *
@@ -2098,7 +2099,7 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfInputSignals = GetNumberOfInputSignals();
-        ok = (nOfInputSignals == 4u); // Will need to be changed if any input signals are added or removed
+        ok = (nOfInputSignals == 5u); // Will need to be changed if any input signals are added or removed
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 5", gam_name.Buffer());
         }
@@ -2134,6 +2135,14 @@ bool InvertedPendulumGAM::Setup() {
             INPUT_L6474_Board_Pwm1Counter = (uint32*) GetInputSignalMemory(signalIdx);
         } else {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal L6474_Board_Pwm1Counter ");
+        }
+    }
+    if (ok) {    
+        ok = GAMCheckSignalProperties(*this, "INPUT_break_Control_Loop", InputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
+        if (ok) {
+            INPUT_break_Control_Loop = (uint8*) GetInputSignalMemory(signalIdx);
+        } else {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal INPUT_break_Control_Loop");
         }
     }
     // if (ok) {    
@@ -2296,11 +2305,19 @@ void InvertedPendulumGAM::user_configuration(void){
 	
 }
 
+void InvertedPendulumGAM::restart_execution(){
+    if (ACCEL_CONTROL == 1) {
+        desired_pwm_period = 0u;
+        current_pwm_period = 0u;
+    }
+    state = STATE_INITIALIZATION;
+}
+
 bool InvertedPendulumGAM::Execute() {
 
     //MARTe::uint8 state                    = *INPUT_state;
     MARTe::uint32 message_count           =  *INPUT_message_count;
-
+    MARTe::uint32 break_Control_Loop      =  *INPUT_break_Control_Loop;
     //reset all outputs
    *OUTPUT_rotor_control_target_steps=0;
    *OUTPUT_gpioState = UNKNOW_DIR;
@@ -2309,6 +2326,11 @@ bool InvertedPendulumGAM::Execute() {
 
     bool  ret = true;
     if( message_count > 0u){
+
+        if( break_Control_Loop == 1u){//if break command is received
+             restart_execution();
+        }
+       
         if( state == STATE_INITIALIZATION){
             control_logic_State_Initialization();
             state = STATE_PENDULUM_STABLIZATION;
@@ -2328,14 +2350,10 @@ bool InvertedPendulumGAM::Execute() {
                 control_logic_State_Main_Prepare();
             }
         }
-        if( state == STATE_MAIN ) {// main state 
+        if( state == STATE_MAIN ) {   // main state 
             ret = control_logic_State_Main();
             if( !ret ){//state change
-                if (ACCEL_CONTROL == 1) {
-                    desired_pwm_period = 0u;
-                    current_pwm_period = 0u;
-                }
-                state = STATE_INITIALIZATION;
+                restart_execution();
             }
         }
     }

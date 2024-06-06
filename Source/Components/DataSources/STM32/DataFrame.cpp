@@ -10,7 +10,8 @@ namespace MFI {
          RxDataFrame::RxDataFrame():
             positionRotor(0), 
             encoder_counter(0u), 
-            Pwm1Counter(0u)
+            Pwm1Counter(0u),
+            break_Control_Loop(0u)
             // CYCCNT(0u), 
             // OUTPUT_rotor_control_target_steps(0), 
             // OUTPUT_L6474_Board_Pwm1Period(0u), 
@@ -120,6 +121,9 @@ namespace MFI {
                                  (static_cast<uint32>(raw[9]) << 8) +
                                  (static_cast<uint32>(raw[10]) << 16) +
                                  (static_cast<uint32>(raw[11]) << 24);
+
+
+            dataframe.break_Control_Loop =   static_cast<uint8>(raw[12]);
 
             // dataframe.CYCCNT =   static_cast<uint32>(raw[12]) +
             //                      (static_cast<uint32>(raw[13]) << 8)+

@@ -187,6 +187,8 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
         signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.encoder_counter);
     } else if (signalIdx == 9u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.Pwm1Counter);
+    }  else if (signalIdx == 10u) {
+        signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.break_Control_Loop);
     } 
     // else if (signalIdx == 10u) {
     //     signalAddress = reinterpret_cast<void *>(&rx_signals.dataframe.CYCCNT);
@@ -195,17 +197,17 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
     // control_target_steps,
     // gpioState,
     // Pwm1Period
-    else if (signalIdx == 10u) {
+    else if (signalIdx == 11u) {
         signalAddress = reinterpret_cast<void *>(&tx_signals.control_target_steps);
-    } else if (signalIdx == 11u) {
-        signalAddress = reinterpret_cast<void *>(&tx_signals.gpioState);
     } else if (signalIdx == 12u) {
+        signalAddress = reinterpret_cast<void *>(&tx_signals.gpioState);
+    } else if (signalIdx == 13u) {
         signalAddress = reinterpret_cast<void *>(&tx_signals.Pwm1Period);
-    }else if (signalIdx == 13u) {
-        signalAddress = reinterpret_cast<void *>(&tx_signals.break_Control_Loop);
     }else if (signalIdx == 14u) {
+        signalAddress = reinterpret_cast<void *>(&tx_signals.break_Control_Loop);
+    }else if (signalIdx == 15u) {
         signalAddress = reinterpret_cast<void *>(&tx_signals.state);
-    } else if (signalIdx == 15u) {
+    } else if (signalIdx == 16u) {
         signalAddress = reinterpret_cast<void *>(&rx_signals.encoder_position);
     } 
     // else if (signalIdx == 16u) {
@@ -270,9 +272,9 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     bool ok = DataSourceI::SetConfiguredDatabase(data);
     
     if (ok) {
-        ok = (GetNumberOfSignals() == 16u);
+        ok = (GetNumberOfSignals() == 17u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 16 signals should be specified");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 17 signals should be specified");
         }
     }
     
@@ -345,6 +347,13 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal Pwm1Counter");
         }
     }
+    if (ok) {
+        ok = DataSourceCheckSignalProperties(*this, 10u, UnsignedInteger8Bit, 0u, 1u);
+        if (!ok) {
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal INPUT break_Control_Loop");
+        }
+    }
+    
     // if (ok) {
     //     ok = DataSourceCheckSignalProperties(*this, 10u, UnsignedInteger32Bit, 0u, 1u);
     //     if (!ok) {
@@ -357,32 +366,32 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     // gpioState,
     // Pwm1Period
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 10u, SignedInteger32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 11u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal control_target_steps");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 11u, UnsignedInteger8Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 12u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal gpioState");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 12u, UnsignedInteger32Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 13u, UnsignedInteger32Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal Pwm1Period");
         }
     }
     
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 13u, UnsignedInteger8Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 14u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal break_Control_Loop");
         }
     }
     if (ok) {
-        ok = DataSourceCheckSignalProperties(*this, 14u, UnsignedInteger8Bit, 0u, 1u);
+        ok = DataSourceCheckSignalProperties(*this, 15u, UnsignedInteger8Bit, 0u, 1u);
         if (!ok) {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal state");
         }

@@ -532,6 +532,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    //MARTe::uint32* INPUT_CYCCNT;
    MARTe::uint32* INPUT_message_count;
    MARTe::uint32* INPUT_encoder_counter;
+   MARTe::uint8* INPUT_break_Control_Loop;
    //MARTe::uint8* INPUT_state;
    //********************########################################################*************************************
 
@@ -551,6 +552,7 @@ class InvertedPendulumGAM : public MARTe::GAM {
    /* Private function prototypes -----------------------------------------------*/
    void Error_Handler(u_int16_t error);
    void select_mode_1(void);
+   void restart_execution(void);
    void user_configuration(void);
    void Main_StepClockHandler();
    void apply_acceleration(float * acc, float* target_velocity_prescaled, float t_sample);

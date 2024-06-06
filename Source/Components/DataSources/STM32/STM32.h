@@ -23,7 +23,7 @@ struct STM32OutSignals {
     MARTe::uint64 message_rx_time;
     MARTe::uint64 message_tx_time;
     MARTe::uint32 rx_buffer_occupancy;
-   MARTe::float32 encoder_position;
+    MARTe::float32 encoder_position;
     
     DataFrame::RxDataFrame dataframe;
 };
