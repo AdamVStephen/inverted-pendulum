@@ -13,18 +13,13 @@ namespace MFI {
 
 InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
 
-   //INPUT_encoder_position  = NULL_PTR(float32*);
    INPUT_rotor_position_steps    = NULL_PTR(int32*);
-   INPUT_L6474_Board_Pwm1Counter = NULL_PTR(uint32*);
-   //INPUT_CYCCNT                  = NULL_PTR(uint32*);
    INPUT_message_count           = NULL_PTR(uint32*);
-   //INPUT_state                   = NULL_PTR(uint8*);
    INPUT_encoder_counter        = NULL_PTR(uint32*);
-   INPUT_break_Control_Loop     = NULL_PTR(uint8*);
 
-   OUTPUT_rotor_control_target_steps    = NULL_PTR(int32*);
-   OUTPUT_gpioState                     = NULL_PTR(uint8*);
-   OUTPUT_L6474_Board_Pwm1Period        = NULL_PTR(uint32*);
+   OUTPUT_motor_StepCount    = NULL_PTR(int32*);
+   OUTPUT_motor_Direction                     = NULL_PTR(uint8*);
+   OUTPUT_motor_Acceleration        = NULL_PTR(int32*);
    OUTPUT_break_Control_Loop            = NULL_PTR(uint8*);
    OUTPUT_state                         = NULL_PTR(uint8*);
    OUTPUT_encoder_position              = NULL_PTR(float32*);
@@ -926,7 +921,7 @@ bool InvertedPendulumGAM::control_logic_State_PendulumStablisation() {
 bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 
     
-        *OUTPUT_rotor_control_target_steps= 0;
+        *OUTPUT_motor_StepCount= 0;
 		/* Enter Swing Up Loop */
 		//while (1)
 		//{
@@ -953,8 +948,8 @@ bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 				if (swing_up_state == 0){
 					//BSP_MotorControl_Move(0, swing_up_direction, stage_amp);
 					//BSP_MotorControl_WaitWhileActive(0);
-                    *OUTPUT_rotor_control_target_steps=stage_amp;
-                    *OUTPUT_gpioState = swing_up_direction;
+                    *OUTPUT_motor_StepCount=stage_amp;
+                    *OUTPUT_motor_Direction = swing_up_direction;
 					stage_count++;
 
 					if (prev_global_max_encoder_position != global_max_encoder_position && stage_count > 4){
@@ -1763,12 +1758,12 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
     //     } else {
     //         apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
     //     }
-    //     *OUTPUT_rotor_control_target_steps = 0;
+    //     *OUTPUT_motor_StepCount = 0;
     // } else {
-    //     *OUTPUT_rotor_control_target_steps = rotor_control_target_steps/2;
+    //     *OUTPUT_motor_StepCount = rotor_control_target_steps/2;
     //     //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
     // }
-    *OUTPUT_rotor_control_target_steps = rotor_control_target_steps;
+    *OUTPUT_motor_Acceleration = rotor_control_target_steps;
     /*
         * *************************************************************************************************
         *
@@ -1966,113 +1961,6 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
 }
 
 
-float InvertedPendulumGAM::L6474_Board_Pwm1PrescaleFreq( float freq ){
-
-    const int BSP_MOTOR_CONTROL_BOARD_PWM1_FREQ_RESCALER = 2; // value : 2
-    const int TIMER_PRESCALER = 1024; //value: 1024
-
-    return TIMER_PRESCALER * BSP_MOTOR_CONTROL_BOARD_PWM1_FREQ_RESCALER * freq;
-}
-
-void InvertedPendulumGAM::apply_acceleration(float * acc, float * target_velocity_prescaled, float t_sample) {
-	/*
-	 *  Stepper motor acceleration, speed, direction and position control developed by Ryan Nemiroff
-	 */
-
-	u_int32_t current_pwm_period_local = current_pwm_period;
-	u_int32_t desired_pwm_period_local = desired_pwm_period;
-
-	/*
-	 * Add time reporting
-	 */
-
-	//apply_acc_start_time = *INPUT_CYCCNT;
-
-     
-	MOTOR_DIRECTION old_dir = *target_velocity_prescaled > 0 ? FORWARD : BACKWARD;
-
-	if (old_dir == FORWARD) {
-		if (*acc > MAXIMUM_ACCELERATION) {
-			*acc = MAXIMUM_ACCELERATION;
-		} else if (*acc < -MAXIMUM_DECELERATION) {
-			*acc = -MAXIMUM_DECELERATION;
-		}
-	} else {
-		if (*acc < -MAXIMUM_ACCELERATION) {
-			*acc = -MAXIMUM_ACCELERATION;
-		} else if (*acc > MAXIMUM_DECELERATION) {
-			*acc = MAXIMUM_DECELERATION;
-		}	
-	}
-
-	*target_velocity_prescaled += L6474_Board_Pwm1PrescaleFreq(*acc) * t_sample;
-	MOTOR_DIRECTION new_dir = *target_velocity_prescaled > 0 ? FORWARD : BACKWARD;
-
-	if (*target_velocity_prescaled > L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED)) {
-		*target_velocity_prescaled = L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED);
-	} else if (*target_velocity_prescaled < -L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED)) {
-		*target_velocity_prescaled = -L6474_Board_Pwm1PrescaleFreq(MAXIMUM_SPEED);
-	}
-
-	float speed_prescaled;
-	if (new_dir == FORWARD ) {
-		speed_prescaled = *target_velocity_prescaled;
-	} else {
-		speed_prescaled = *target_velocity_prescaled * -1;
-		if (speed_prescaled == 0) speed_prescaled = 0; // convert negative 0 to positive 0
-	}
-
-
-	u_int32_t effective_pwm_period = desired_pwm_period_local;
-
-	float desired_pwm_period_float = roundf(RCC_SYS_CLOCK_FREQ / speed_prescaled);
-	if (!(desired_pwm_period_float < 4294967296.0f)) {
-		desired_pwm_period_local = UINT_MAX;
-	}else if( desired_pwm_period_float == 0){
-        desired_pwm_period_local  = 1;
-    } else {
-		desired_pwm_period_local = (u_int32_t)(desired_pwm_period_float);
-	}
-
-    //******************set OUTPUT
-	if (old_dir != new_dir) {
-		*OUTPUT_gpioState = new_dir; 
-	}else
-        *OUTPUT_gpioState = ((u_int8_t)0xFF) ;
-
-    *OUTPUT_L6474_Board_Pwm1Period =0u;
-	if (current_pwm_period_local != 0) {
-		u_int32_t pwm_count = *INPUT_L6474_Board_Pwm1Counter;
-		u_int32_t pwm_time_left = current_pwm_period_local - pwm_count;
-		if (pwm_time_left > PWM_COUNT_SAFETY_MARGIN) {
-			if (old_dir != new_dir) {
-				// pwm_time_left = effective_pwm_period - pwm_time_left; // One method for assignment of PWM period during switching directions. This has the effect of additional discrete step noise.
-				pwm_time_left = effective_pwm_period; // Second method for assignment of PWM period during switching directions. This shows reduced discrete step noise.
-			}
-
-			u_int32_t new_pwm_time_left = ((u_int64_t) pwm_time_left * desired_pwm_period_local) / effective_pwm_period;
-			if (new_pwm_time_left != pwm_time_left) {
-				if (new_pwm_time_left < PWM_COUNT_SAFETY_MARGIN) {
-					new_pwm_time_left = PWM_COUNT_SAFETY_MARGIN;
-				}
-				current_pwm_period_local = pwm_count + new_pwm_time_left;
-				if (current_pwm_period_local < pwm_count) {
-					current_pwm_period_local = UINT_MAX;
-				}
-
-				*OUTPUT_L6474_Board_Pwm1Period = current_pwm_period_local;
-				current_pwm_period = current_pwm_period_local;
-			}
-		}
-	} else {
-		*OUTPUT_L6474_Board_Pwm1Period = desired_pwm_period_local;
-		current_pwm_period = desired_pwm_period_local;
-	}
-
-	desired_pwm_period = desired_pwm_period_local;
-
-}
-
 bool InvertedPendulumGAM::Initialise(MARTe::StructuredDataI & data) {
     bool ok = GAM::Initialise(data);
 
@@ -2099,7 +1987,7 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfInputSignals = GetNumberOfInputSignals();
-        ok = (nOfInputSignals == 5u); // Will need to be changed if any input signals are added or removed
+        ok = (nOfInputSignals == 3u); // Will need to be changed if any input signals are added or removed
         if (!ok) {
             REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 5", gam_name.Buffer());
         }
@@ -2113,14 +2001,6 @@ bool InvertedPendulumGAM::Setup() {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal message_count");
         }
     }
-    // if (ok) {    
-    //     ok = GAMCheckSignalProperties(*this, "encoder_position", InputSignals, Float32Bit, 0u, 1u, signalIdx);
-    //     if (ok) {
-    //         INPUT_encoder_position = (float32*) GetInputSignalMemory(signalIdx);
-    //     } else {
-    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal encoder_position");
-    //     }
-    // }
     if (ok) {    
         ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
@@ -2129,38 +2009,6 @@ bool InvertedPendulumGAM::Setup() {
             REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal rotor_position_steps ");
         }
     }
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "L6474_Board_Pwm1Counter", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            INPUT_L6474_Board_Pwm1Counter = (uint32*) GetInputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal L6474_Board_Pwm1Counter ");
-        }
-    }
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "INPUT_break_Control_Loop", InputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            INPUT_break_Control_Loop = (uint8*) GetInputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal INPUT_break_Control_Loop");
-        }
-    }
-    // if (ok) {    
-    //     ok = GAMCheckSignalProperties(*this, "CYCCNT", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
-    //     if (ok) {
-    //         INPUT_CYCCNT = (uint32*) GetInputSignalMemory(signalIdx);
-    //     } else {
-    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal CYCCNT ");
-    //     }
-    // }
-    // if (ok) {    
-    //     ok = GAMCheckSignalProperties(*this, "state", InputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
-    //     if (ok) {
-    //         INPUT_state = (uint8*) GetInputSignalMemory(signalIdx);
-    //     } else {
-    //         REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal state ");
-    //     }
-    // }
     if (ok) {    
         ok = GAMCheckSignalProperties(*this, "encoder_counter", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
@@ -2187,27 +2035,27 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "rotor_control_target_steps", OutputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "motor_StepCount", OutputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            OUTPUT_rotor_control_target_steps = (int32*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_motor_StepCount = (int32*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal rotor_control_target_steps");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal motor_StepCount");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "gpioState", OutputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "motor_Direction", OutputSignals, UnsignedInteger8Bit, 0u, 1u, signalIdx);
         if (ok) {
-            OUTPUT_gpioState = (uint8*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_motor_Direction = (uint8*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal gpioState");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal motor_Direction");
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "L6474_Board_Pwm1Period", OutputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "motor_Acceleration", OutputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            OUTPUT_L6474_Board_Pwm1Period = (uint32*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_motor_Acceleration = (int32*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal L6474_Board_Pwm1Period");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal motor_Acceleration");
         }
     }
     if (ok) {    
@@ -2317,19 +2165,14 @@ bool InvertedPendulumGAM::Execute() {
 
     //MARTe::uint8 state                    = *INPUT_state;
     MARTe::uint32 message_count           =  *INPUT_message_count;
-    MARTe::uint32 break_Control_Loop      =  *INPUT_break_Control_Loop;
     //reset all outputs
-   *OUTPUT_rotor_control_target_steps=0;
-   *OUTPUT_gpioState = UNKNOW_DIR;
-   *OUTPUT_L6474_Board_Pwm1Period = 0;
+   *OUTPUT_motor_StepCount=0;
+   *OUTPUT_motor_Direction = UNKNOW_DIR;
+   *OUTPUT_motor_Acceleration = 0;
    *OUTPUT_break_Control_Loop = 0;
 
     bool  ret = true;
     if( message_count > 0u){
-
-        if( break_Control_Loop == 1u){//if break command is received
-             restart_execution();
-        }
        
         if( state == STATE_INITIALIZATION){
             control_logic_State_Initialization();

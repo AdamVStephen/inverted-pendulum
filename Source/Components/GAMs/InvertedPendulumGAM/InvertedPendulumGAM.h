@@ -528,23 +528,19 @@ class InvertedPendulumGAM : public MARTe::GAM {
    //********************############### Input Signals #########################*************************************
    //MARTe::float32* INPUT_encoder_position;
    MARTe::int32*  INPUT_rotor_position_steps;
-   MARTe::uint32* INPUT_L6474_Board_Pwm1Counter;
-   //MARTe::uint32* INPUT_CYCCNT;
    MARTe::uint32* INPUT_message_count;
    MARTe::uint32* INPUT_encoder_counter;
-   MARTe::uint8* INPUT_break_Control_Loop;
-   //MARTe::uint8* INPUT_state;
    //********************########################################################*************************************
 
    //********************############### Out Signals #########################*************************************
    //MARTe::uint32 encoder_position_steps;
 
       /* Control system output signal */
-   MARTe::int32* OUTPUT_rotor_control_target_steps;
-   MARTe::uint8* OUTPUT_gpioState;
-   MARTe::uint32* OUTPUT_L6474_Board_Pwm1Period;
-   MARTe::uint8* OUTPUT_break_Control_Loop;
-   MARTe::uint8* OUTPUT_state;
+   MARTe::int32*   OUTPUT_motor_StepCount;
+   MARTe::uint8*   OUTPUT_motor_Direction;
+   MARTe::int32*  OUTPUT_motor_Acceleration;
+   MARTe::uint8*   OUTPUT_break_Control_Loop;
+   MARTe::uint8*   OUTPUT_state;
    MARTe::float32* OUTPUT_encoder_position;
    //********************########################################################*************************************
 

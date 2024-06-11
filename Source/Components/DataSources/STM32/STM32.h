@@ -32,11 +32,13 @@ struct STM32OutSignals {
 struct STM32InSignals { 
     STM32InSignals();
 
-    MARTe::int32 control_target_steps;
-    MARTe::uint32 Pwm1Period;
-    MARTe::uint8 gpioState;
+    MARTe::int32 motor_StepCount;
+    MARTe::int32 motor_Acceleration;
+    MARTe::uint8 motor_Direction;
     MARTe::uint8 break_Control_Loop;
     MARTe::uint8 state;
+
+
 };
 #pragma pack(pop)
 

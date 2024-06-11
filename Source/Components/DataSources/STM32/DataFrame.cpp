@@ -9,15 +9,7 @@ namespace MFI {
 
          RxDataFrame::RxDataFrame():
             positionRotor(0), 
-            encoder_counter(0u), 
-            Pwm1Counter(0u),
-            break_Control_Loop(0u)
-            // CYCCNT(0u), 
-            // OUTPUT_rotor_control_target_steps(0), 
-            // OUTPUT_L6474_Board_Pwm1Period(0u), 
-            // OUTPUT_gpioState(0u), 
-            // OUTPUT_break_Control_Loop(0u),
-            // OUTPUT_state(0u)
+            encoder_counter(0u)
         {
                           
         }
@@ -92,17 +84,6 @@ namespace MFI {
         //     return output;
         // }
 
-
-        /*
-        MARTe::int32 positionRotor;
-            MARTe::int32 positionEncoder;
-            MARTe::uint32  Pwm1Counter;
-            MARTe::uint32 CYCCNT;
-
-            MARTe::int32 OUTPUT_rotor_control_target_steps;
-            MARTe::uint32 OUTPUT_L6474_Board_Pwm1Period;
-            MARTe::uint8 OUTPUT_gpioState;
-        */
         void ParseRxDataFramePayload(uint8* raw, RxDataFrame& dataframe) {  
 
 
@@ -117,62 +98,7 @@ namespace MFI {
                                  (static_cast<uint32>(raw[6]) << 16) +
                                  (static_cast<uint32>(raw[7]) << 24);
 
-            dataframe.Pwm1Counter = static_cast<uint32>(raw[8]) +
-                                 (static_cast<uint32>(raw[9]) << 8) +
-                                 (static_cast<uint32>(raw[10]) << 16) +
-                                 (static_cast<uint32>(raw[11]) << 24);
-
-
-            dataframe.break_Control_Loop =   static_cast<uint8>(raw[12]);
-
-            // dataframe.CYCCNT =   static_cast<uint32>(raw[12]) +
-            //                      (static_cast<uint32>(raw[13]) << 8)+
-            //                      (static_cast<uint32>(raw[14]) << 16) +
-            //                      (static_cast<uint32>(raw[15]) << 24);
-
-            //dataframe.OUTPUT_rotor_control_target_steps = bytesToFloat(raw[16], raw[17], raw[18], raw[19]);
-            // dataframe.OUTPUT_rotor_control_target_steps =   
-            //                      static_cast<int32>(raw[16]) +
-            //                      (static_cast<int32>(raw[17]) << 8)+
-            //                      (static_cast<int32>(raw[18]) << 16) +
-            //                      (static_cast<int32>(raw[19]) << 24);
-
-            // dataframe.OUTPUT_L6474_Board_Pwm1Period =   
-            //                      static_cast<uint32>(raw[20]) +
-            //                      (static_cast<uint32>(raw[21]) << 8)+
-            //                      (static_cast<uint32>(raw[22]) << 16) +
-            //                      (static_cast<uint32>(raw[23]) << 24);
-                                
-            // dataframe.OUTPUT_gpioState =   static_cast<uint8>(raw[24]);
-            // dataframe.OUTPUT_break_Control_Loop =   static_cast<uint8>(raw[25]);
-            // dataframe.OUTPUT_state =   static_cast<uint8>(raw[26]);
-
-            //int ch  = 1;
-
+           
         }   
-
-        // void ParseRxDataFramePayload(uint8* raw, RxDataFrame& dataframe) {  
-        //     dataframe.adc_time = static_cast<uint32>(raw[0]) +
-        //                         (static_cast<uint32>(raw[1]) << 8) +
-        //                         (static_cast<uint32>(raw[2]) << 16) +
-        //                         (static_cast<uint32>(raw[3]) << 24);
-
-        //     dataframe.pps1_time = static_cast<uint32>(raw[4]) +
-        //                          (static_cast<uint32>(raw[5]) << 8) +
-        //                          (static_cast<uint32>(raw[6]) << 16) +
-        //                          (static_cast<uint32>(raw[7]) << 24);
-
-        //     dataframe.pps2_time = static_cast<uint32>(raw[8]) +
-        //                          (static_cast<uint32>(raw[9]) << 8) +
-        //                          (static_cast<uint32>(raw[10]) << 16) +
-        //                          (static_cast<uint32>(raw[11]) << 24);
-
-        //     dataframe.adc1_data = static_cast<uint16>(raw[12]) +
-        //                          (static_cast<uint16>(raw[13]) << 8);
-
-        //     dataframe.adc2_data = static_cast<uint16>(raw[14]) +
-        //                          (static_cast<uint16>(raw[15]) << 8);
-        // }
-
     } // namespace DataFrame
 } // namespace MFI
