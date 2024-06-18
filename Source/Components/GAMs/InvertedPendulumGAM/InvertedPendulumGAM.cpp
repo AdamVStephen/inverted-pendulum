@@ -14,10 +14,9 @@ namespace MFI {
 InvertedPendulumGAM::InvertedPendulumGAM() : GAM() {
 
    INPUT_rotor_position_steps    = NULL_PTR(int32*);
-   INPUT_message_count           = NULL_PTR(uint32*);
    INPUT_encoder_counter        = NULL_PTR(uint32*);
 
-   OUTPUT_motor_StepCount    = NULL_PTR(int32*);
+   OUTPUT_motor_ImpuleAmplitude    = NULL_PTR(int32*);
    OUTPUT_motor_Direction                     = NULL_PTR(uint8*);
    OUTPUT_motor_Acceleration        = NULL_PTR(int32*);
    OUTPUT_break_Control_Loop            = NULL_PTR(uint8*);
@@ -359,14 +358,14 @@ void InvertedPendulumGAM::control_logic_State_Initialization(){
         iir_2_r = (1 / (1 + IWon_r)) * (1 - IWon_r);
     }
 
-    /* Optional Transfer function model of form Wn/(s^3 + Wn*s^2)
+    // Optional Transfer function model of form Wn/(s^3 + Wn*s^2)
     if (enable_rotor_plant_design == 3 && enable_state_feedback == 0){
-            IWon_r = 2 / (Wo_r * Tsample);
-            iir_0_r = 1 / (1 + IWon_r);
-            iir_1_r = iir_0_r;
-            iir_2_r = iir_0_r * (1 - IWon_r);
+        IWon_r = 2 / (Wo_r * Tsample);
+        iir_0_r = 1 / (1 + IWon_r);
+        iir_1_r = iir_0_r;
+        iir_2_r = iir_0_r * (1 - IWon_r);
     }
-    */
+    
 
     /*
 
@@ -764,7 +763,7 @@ void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
         zero_crossed = 0;
         stage_count = 0;
         /* Select initial amplitude for rotor impulse */
-        stage_amp = STAGE_0_AMP;
+        impulse_amp = STAGE_0_AMP;
 
         /* Optional encoder state reporting */
         //sprintf(msg_display,"Current Position %0.2f\r\n", (encoder_position - encoder_position_down)/angle_scale);
@@ -785,7 +784,7 @@ void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
         //     HAL_Delay(2);
         //     ret = encoder_position_read(&encoder_position_steps, encoder_position_init, &htim3);
         //     /* Optional Swing Up progress reporting */
-        //     //sprintf(msg_display,"Rotor Impulse Amplitude %i Max Angle (degrees) %0.3f\r\n", stage_amp, fabs((float)(global_max_encoder_position)/(ENCODER_READ_ANGLE_SCALE)));
+        //     //sprintf(msg_display,"Rotor Impulse Amplitude %i Max Angle (degrees) %0.3f\r\n", impulse_amp, fabs((float)(global_max_encoder_position)/(ENCODER_READ_ANGLE_SCALE)));
         //     //HAL_UART_Transmit(&huart2, (u_int8_t*) msg_display, strlen(msg_display), HAL_MAX_DELAY);
 
         //     /* Break if pendulum angle relative to vertical meets tolerance (for clockwise or counter clockwise approach */
@@ -802,19 +801,19 @@ void InvertedPendulumGAM::control_logic_State_SwingingUp_Prepare() {
         //         zero_crossed = 0;
         //         // Push it aka put some more kinetic energy into the pendulum
         //         if (swing_up_state == 0){
-        //             BSP_MotorControl_Move(0, swing_up_direction, stage_amp);
+        //             BSP_MotorControl_Move(0, swing_up_direction, impulse_amp);
         //             BSP_MotorControl_WaitWhileActive(0);
         //             stage_count++;
 
         //             if (prev_global_max_encoder_position != global_max_encoder_position && stage_count > 4){
         //             if (abs(global_max_encoder_position) < 600){
-        //                 stage_amp = STAGE_0_AMP;
+        //                 impulse_amp = STAGE_0_AMP;
         //             }
         //             if (abs(global_max_encoder_position) >= 600 && abs(global_max_encoder_position) < 1000){
-        //                 stage_amp = STAGE_1_AMP;
+        //                 impulse_amp = STAGE_1_AMP;
         //             }
         //             if (abs(global_max_encoder_position) >= 1000){
-        //                 stage_amp = STAGE_2_AMP;
+        //                 impulse_amp = STAGE_2_AMP;
         //             }
         //             }
         //             prev_global_max_encoder_position = global_max_encoder_position;
@@ -918,49 +917,54 @@ bool InvertedPendulumGAM::control_logic_State_PendulumStablisation() {
     return false;
 }
 
+bool InvertedPendulumGAM::control_logic_State_SwingingUp_checkSwingUp(){
+
+    /* return TRUE if pendulum angle relative to vertical meets tolerance (for clockwise or counter clockwise approach */
+    if (fabs(encoder_position_steps - encoder_position_down - (int) (180 * angle_scale)) < START_ANGLE * angle_scale){
+        return true;//state change
+    }
+    if (fabs(encoder_position_steps - encoder_position_down + (int)(180 * angle_scale)) < START_ANGLE * angle_scale){
+        encoder_position_down = encoder_position_down - 2*(int)(180 * angle_scale);
+        return true;//state change
+    }
+
+//otherwise return FALSE
+    return false;
+}
+
 bool InvertedPendulumGAM::control_logic_State_SwingingUp() {
 
     
-        *OUTPUT_motor_StepCount= 0;
+        *OUTPUT_motor_ImpuleAmplitude= 0;
 		/* Enter Swing Up Loop */
 		//while (1)
 		//{
 			//break;
 			//HAL_Delay(2);
 			ret = encoder_position_read(&encoder_position_steps, encoder_position_init);
-			/* Optional Swing Up progress reporting */
-			//sprintf(tmp_string,"Rotor Impulse Amplitude %i Max Angle (degrees) %0.3f\r\n", stage_amp, fabs((float)(global_max_encoder_position)/(ENCODER_READ_ANGLE_SCALE)));
-			//HAL_UART_Transmit(&huart2, (u_int8_t*) tmp_string, strlen(tmp_string), HAL_MAX_DELAY);
 
-			/* Break if pendulum angle relative to vertical meets tolerance (for clockwise or counter clockwise approach */
-			if (fabs(encoder_position_steps - encoder_position_down - (int) (180 * angle_scale)) < START_ANGLE * angle_scale){
-				return true;//state change
-			}
-			if (fabs(encoder_position_steps - encoder_position_down + (int)(180 * angle_scale)) < START_ANGLE * angle_scale){
-				encoder_position_down = encoder_position_down - 2*(int)(180 * angle_scale);
-				return true;//state change
-			}
+			if( control_logic_State_SwingingUp_checkSwingUp() ) return true;
 
 			if (zero_crossed)
 			{//
 				zero_crossed = false;
 				// Push it aka put some more kinetic energy into the pendulum
 				if (swing_up_state == 0){
-					//BSP_MotorControl_Move(0, swing_up_direction, stage_amp);
+					//BSP_MotorControl_Move(0, swing_up_direction, impulse_amp);
 					//BSP_MotorControl_WaitWhileActive(0);
-                    *OUTPUT_motor_StepCount=stage_amp;
+                    *OUTPUT_motor_ImpuleAmplitude=impulse_amp;
                     *OUTPUT_motor_Direction = swing_up_direction;
 					stage_count++;
 
 					if (prev_global_max_encoder_position != global_max_encoder_position && stage_count > 4){
                         if (abs(global_max_encoder_position) < 600){
-                            stage_amp = STAGE_0_AMP;
+                            impulse_amp = STAGE_0_AMP;
                         }
                         if (abs(global_max_encoder_position) >= 600 && abs(global_max_encoder_position) < 1000){
-                            stage_amp = STAGE_1_AMP;
+                            impulse_amp = STAGE_1_AMP;
                         }
                         if (abs(global_max_encoder_position) >= 1000){
-                            stage_amp = STAGE_2_AMP;
+                            impulse_amp = STAGE_2_AMP;
                         }
 					}
 					prev_global_max_encoder_position = global_max_encoder_position;
@@ -1746,24 +1750,26 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
     rotor_position_command_steps_prev = rotor_position_command_steps;
 
     //##################TO REVISIT HARWARE CALL TO TAKE ACTION##################################
-    // if (ACCEL_CONTROL == 1) {
-    //     if (enable_rotor_plant_design != 0){
-    //         rotor_control_target_steps_filter_2 = rotor_plant_gain*rotor_control_target_steps_filter_2;
-    //         apply_acceleration(&rotor_control_target_steps_filter_2, &target_velocity_prescaled, Tsample);
-    //     /* Applies if Rotor Gain defined */
-    //     } else if (enable_rotor_plant_gain_design == 1){
-    //         rotor_control_target_steps_gain = rotor_plant_gain * rotor_control_target_steps;
-    //         apply_acceleration(&rotor_control_target_steps_gain, &target_velocity_prescaled, Tsample);
-    //     /* Applies if no Rotor Design is selected */
-    //     } else {
-    //         apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
-    //     }
-    //     *OUTPUT_motor_StepCount = 0;
-    // } else {
-    //     *OUTPUT_motor_StepCount = rotor_control_target_steps/2;
-    //     //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
-    // }
-    *OUTPUT_motor_Acceleration = rotor_control_target_steps;
+    if (ACCEL_CONTROL == 1) {
+        if (enable_rotor_plant_design != 0){
+            rotor_control_target_steps_filter_2 = rotor_plant_gain*rotor_control_target_steps_filter_2;
+            *OUTPUT_motor_Acceleration = rotor_control_target_steps_filter_2;
+            //apply_acceleration(&rotor_control_target_steps_filter_2, &target_velocity_prescaled, Tsample);
+        /* Applies if Rotor Gain defined */
+        } else if (enable_rotor_plant_gain_design == 1){
+            rotor_control_target_steps_gain = rotor_plant_gain * rotor_control_target_steps;
+            *OUTPUT_motor_Acceleration = rotor_control_target_steps_gain;
+            //apply_acceleration(&rotor_control_target_steps_gain, &target_velocity_prescaled, Tsample);
+        /* Applies if no Rotor Design is selected */
+        } else {
+            *OUTPUT_motor_Acceleration = rotor_control_target_steps;
+            //apply_acceleration(&rotor_control_target_steps, &target_velocity_prescaled, Tsample);
+        }
+    } else {
+        *OUTPUT_motor_ImpuleAmplitude = rotor_control_target_steps/2;
+        //BSP_MotorControl_GoTo(0, rotor_control_target_steps/2);
+    }
+
     /*
         * *************************************************************************************************
         *
@@ -1779,67 +1785,12 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
         reference_tracking_command = rotor_position_command_steps;
     }
 
-    //##################TO REVISIT HARWARE SET-UP control cycle heartbit ##################################
-    // /* Compute 100 cycle time average of cycle period for system performance measurement */
-    // if(i == 1){
-    //     cycle_period_start = HAL_GetTick();
-    //     cycle_period_sum = 100*Tsample*1000 - 1;
-    // }
-    // if(i % 100 == 0){
-    //     cycle_period_sum = HAL_GetTick() - cycle_period_start;
-    //     cycle_period_start = HAL_GetTick();
-    // }
-    // tick = HAL_GetTick();
-    // tick_cycle_previous = tick_cycle_current;
-    // tick_cycle_current = tick;
-
-
-
-    /* High speed sampling mode data reporting */
-    /* Time reported is equal to ((cycle time - 2000)microseconds/10) */
-
-    // if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 1 && enable_rotor_tracking_comb_signal == 0 && ACCEL_CONTROL_DATA == 0){
-    //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", cycle_period_sum - 200, (int)(roundf(encoder_position)), display_parameter,
-    //             (int)(roundf(rotor_control_target_steps)),(int)(reference_tracking_command));
-    //     show_error();
-    // }
-
-    /* High speed sampling mode data reporting without rotor chirp signal and with comb signal */
-    // if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && enable_rotor_tracking_comb_signal == 1 && ACCEL_CONTROL_DATA == 0){
-    //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", current_cpu_cycle_delay_relative_report,
-    //             (int)(roundf(encoder_position)), display_parameter, (int)(roundf(rotor_control_target_steps)), (int)(roundf(100*rotor_position_command_steps)));
-    //     show_error();
-    // }
-
-    /* High speed sampling mode data reporting without rotor chirp signal and without comb signal */
-    /* Time reported is equal to ((cycle time - sample time)microseconds/10) */
-    // if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && enable_rotor_tracking_comb_signal == 0 && ACCEL_CONTROL_DATA == 0){
-
-    //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\r\n", cycle_period_sum - 200,
-    //             (int)(roundf(encoder_position)), display_parameter,
-    //             (int)(roundf(rotor_control_target_steps)),(int)(reference_tracking_command));
-    //     show_error();
-    // }
-
     if (enable_high_speed_sampling == 1 && enable_rotor_chirp == 0 && ACCEL_CONTROL_DATA == 1){
         if (enable_pendulum_position_impulse_response_cycle == 1) {
             reference_tracking_command = pendulum_position_command_steps;
         } else {
             reference_tracking_command = rotor_position_command_steps;
         }
-
-        // if (Tsample <= 0.00125) { // 1/800Hz = 0.00125s
-        //     /* High speed sampling mode data reporting for 800 Hz mode */
-        //     sprintf(msg_display, "%i\t%i\r\n", (int)reference_tracking_command, current_pwm_period);
-        //     show_error();
-        // } else {
-        //     /* High speed sampling mode data reporting for 500 Hz mode with acceleration contol system data */
-        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\r\n",
-        //             (int)reference_tracking_command, (int)(roundf(rotor_control_target_steps/10)),(int)(rotor_position_command_steps),
-        //             current_pwm_period, desired_pwm_period/10000,
-        //             (clock_int_time/100000));
-        //     show_error();
-        // }
     }
 
     /* Select display parameter corresponding to requested selection of Sensitivity Functions */
@@ -1853,104 +1804,7 @@ bool InvertedPendulumGAM::control_logic_State_Main() {
         display_parameter = noise_rej_signal;
     }
 
-    /*
-        * Normal mode data reporting provides data output each 10th cycle
-        * Time reported is the average of ((cycle periods - desired sample period) microseconds)/10
-        */
 
-    if (enable_high_speed_sampling == 0){
-
-        /*
-            * Provide report each 10th control cycle
-            * Control parameters scaled by 100 to reduce communication bandwidth
-            *
-            * Speed scale may be enabled to reduce communication bandwidth
-            *
-            */
-
-
-        // if (report_mode != 1000 && report_mode != 2000 && speed_governor == 0){
-        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%.1f\t%i\t%i\r\n", (int)2, cycle_period_sum - 200,
-        //             current_cpu_cycle_delay_relative_report,
-        //             (int)(roundf(encoder_position)), display_parameter, (int)(PID_Pend.int_term)/100,
-        //             reference_tracking_command, (int)(roundf(rotor_control_target_steps)),
-        //             (int)(PID_Rotor.control_output)/100);
-        //     show_error();
-        // }
-
-        // if (report_mode != 1000 && report_mode != 2000 && (i % speed_scale) == 0 && speed_governor == 1){
-        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%.1f\t%i\t%i\r\n", (int)2, cycle_period_sum - 200,
-        //             current_cpu_cycle_delay_relative_report,
-        //             (int)(roundf(encoder_position)), display_parameter, (int)(PID_Pend.int_term)/100,
-        //             reference_tracking_command, (int)(roundf(rotor_control_target_steps)),
-        //             (int)(PID_Rotor.control_output)/100);
-        //     show_error();
-        // }
-
-        /* Provide reports each 1000th cycle of system parameters
-            * Speed parameters scaled by 10 to reduce communication bandwidth
-            */
-
-        // if (report_mode == 1000){
-        //     sprintf(msg_display, "%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%i\t%i\r\n", (int)0,
-        //             PID_Pend.Kp, PID_Pend.Ki, PID_Pend.Kd,
-        //             PID_Rotor.Kp, PID_Rotor.Ki, PID_Rotor.Kd,
-        //             max_speed/10, min_speed/10);
-        //     show_error();
-        // }
-        // if (report_mode == 2000){
-        //     sprintf(msg_display, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\r\n", (int)1,
-        //             (int)torq_current_val, max_accel, max_decel, enable_disturbance_rejection_step,
-        //             enable_noise_rejection_step, enable_rotor_position_step_response_cycle,
-        //             (int)(adjust_increment*10), enable_sensitivity_fnc_step);
-        //     report_mode = 0;
-        //     show_error();
-        // }
-        report_mode = report_mode + 1;
-        
-    }
-
-
-    // /*
-    //     * Adjust cycle delay to match t_sample_cpu_cycles.
-    //     */
-
-    // prev_target_cpu_cycle = target_cpu_cycle;
-    // target_cpu_cycle += t_sample_cpu_cycles; // Increment target_cpu_cycle by sample time
-
-    // current_cpu_cycle = DWT->CYCCNT;
-
-    // // If there is time left until target_cpu_cycle
-    // if (((int) (target_cpu_cycle - current_cpu_cycle)) > 0) {
-
-    //     // If DWT->CYCCNT needs to overflow first
-    //     if (current_cpu_cycle > target_cpu_cycle) {
-    //         // Wait for DWT->CYCCNT to overflow
-    //         do {
-    //             last_cpu_cycle = current_cpu_cycle;
-    //             current_cpu_cycle = DWT->CYCCNT;
-    //         } while (current_cpu_cycle >= last_cpu_cycle);
-    //     }
-
-    //     DWT_Delay_until_cycle(target_cpu_cycle);
-    // } else {
-    //     // Provide warning and exit if delay exceeds 5 cycles
-    //     if (current_cpu_cycle - target_cpu_cycle > t_sample_cpu_cycles*5 && enable_cycle_delay_warning == 1) {
-    //         sprintf(msg_display, "Error: control loop lag\r\n");
-    //         show_error();
-    //         //##################TO REVISIT QUIT HERE##################################
-    //         //break;
-    //     }
-    // }
-
-    // /* Record current cpu cycle for delay computation at the end of loop execution */
-    // current_cpu_cycle = DWT->CYCCNT;
-
-    // /* Compute value of relative delay after insertion of delay adjust */
-    // current_cpu_cycle_delay_relative_report = (int)(t_sample_cpu_cycles - (current_cpu_cycle - prev_cpu_cycle));
-    // current_cpu_cycle_delay_relative_report = (current_cpu_cycle_delay_relative_report*1000000)/RCC_HCLK_FREQ;
-
-    // prev_cpu_cycle = current_cpu_cycle;
 
     /* Increment cycle counter */
 
@@ -1987,20 +1841,12 @@ bool InvertedPendulumGAM::Setup() {
 
     if (ok) {
         uint32 nOfInputSignals = GetNumberOfInputSignals();
-        ok = (nOfInputSignals == 3u); // Will need to be changed if any input signals are added or removed
+        ok = (nOfInputSignals == 2u); // Will need to be changed if any input signals are added or removed
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 5", gam_name.Buffer());
+            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of input signals must be 2", gam_name.Buffer());
         }
     } 
     uint32 signalIdx;
-    if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "MessageCount", InputSignals, UnsignedInteger32Bit, 0u, 1u, signalIdx);
-        if (ok) {
-            INPUT_message_count = (uint32*) GetInputSignalMemory(signalIdx);
-        } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for input signal message_count");
-        }
-    }
     if (ok) {    
         ok = GAMCheckSignalProperties(*this, "rotor_position_steps", InputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
@@ -2022,7 +1868,7 @@ bool InvertedPendulumGAM::Setup() {
         uint32 nOfOutputSignals = GetNumberOfOutputSignals();
         ok = (nOfOutputSignals == 6u); // Will need to be changed if any output signals are added or removed
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of output signals must be 3", gam_name.Buffer());
+            REPORT_ERROR(ErrorManagement::ParametersError, "%s::Number of output signals must be 6", gam_name.Buffer());
         }
     }
     
@@ -2035,11 +1881,11 @@ bool InvertedPendulumGAM::Setup() {
         }
     }
     if (ok) {    
-        ok = GAMCheckSignalProperties(*this, "motor_StepCount", OutputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
+        ok = GAMCheckSignalProperties(*this, "motor_ImpuleAmplitude", OutputSignals, SignedInteger32Bit, 0u, 1u, signalIdx);
         if (ok) {
-            OUTPUT_motor_StepCount = (int32*) GetOutputSignalMemory(signalIdx);
+            OUTPUT_motor_ImpuleAmplitude = (int32*) GetOutputSignalMemory(signalIdx);
         } else {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal motor_StepCount");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for output signal motor_ImpuleAmplitude");
         }
     }
     if (ok) {    
@@ -2163,43 +2009,39 @@ void InvertedPendulumGAM::restart_execution(){
 
 bool InvertedPendulumGAM::Execute() {
 
-    //MARTe::uint8 state                    = *INPUT_state;
-    MARTe::uint32 message_count           =  *INPUT_message_count;
-    //reset all outputs
-   *OUTPUT_motor_StepCount=0;
+   *OUTPUT_motor_ImpuleAmplitude=0;
    *OUTPUT_motor_Direction = UNKNOW_DIR;
    *OUTPUT_motor_Acceleration = 0;
    *OUTPUT_break_Control_Loop = 0;
 
     bool  ret = true;
-    if( message_count > 0u){
-       
-        if( state == STATE_INITIALIZATION){
-            control_logic_State_Initialization();
-            state = STATE_PENDULUM_STABLIZATION;
-            control_logic_State_PendulumStablisation_Prepare();
-        }
-        if( state == STATE_PENDULUM_STABLIZATION){
-            ret = control_logic_State_PendulumStablisation();
-            if( ret ){
-                state = STATE_SWING_UP;
-                control_logic_State_SwingingUp_Prepare();
-            }
-        }
-        if( state == STATE_SWING_UP){ //initialisation state
-            ret = control_logic_State_SwingingUp();
-            if( ret ){//state change
-                state = STATE_MAIN;
-                control_logic_State_Main_Prepare();
-            }
-        }
-        if( state == STATE_MAIN ) {   // main state 
-            ret = control_logic_State_Main();
-            if( !ret ){//state change
-                restart_execution();
-            }
+ 
+    if( state == STATE_INITIALIZATION){
+        control_logic_State_Initialization();
+        state = STATE_PENDULUM_STABLIZATION;
+        control_logic_State_PendulumStablisation_Prepare();
+    }
+    if( state == STATE_PENDULUM_STABLIZATION){
+        ret = control_logic_State_PendulumStablisation();
+        if( ret ){
+            state = STATE_SWING_UP;
+            control_logic_State_SwingingUp_Prepare();
         }
     }
+    if( state == STATE_SWING_UP){ //initialisation state
+        ret = control_logic_State_SwingingUp();
+        if( ret ){//state change
+            state = STATE_MAIN;
+            control_logic_State_Main_Prepare();
+        }
+    }
+    if( state == STATE_MAIN ) {   // main state 
+        ret = control_logic_State_Main();
+        if( !ret ){//state change
+            restart_execution();
+        }
+    }
+
     
     *OUTPUT_state = state;
     *OUTPUT_encoder_position = encoder_position_steps;        
@@ -2211,7 +2053,8 @@ bool oppositeSigns(int x, int y) {
 }
 
 int InvertedPendulumGAM::encoder_position_read(int *encoder_position, int encoder_position_init) {
-
+    
+//************* This is hardware call, as such, it has been abstracted to the GAM input
 	//cnt3 = __HAL_TIM_GET_COUNTER(htim3);
 
     uint32 cnt3 = *INPUT_encoder_counter;

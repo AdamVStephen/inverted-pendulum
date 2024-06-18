@@ -29,8 +29,6 @@ INCLUDES += -I$(ROOT_DIR)/Source/Lib/GAMSignalChecker
 LIBRARIES += $(ROOT_DIR)/Build/$(TARGET)/Components/Lib/GAMSignalChecker/GAMSignalChecker$(DLLEXT)
 
 all: $(OBJS) $(SUBPROJ) \
-	$(BUILD_DIR)/DownsamplingGAM$(LIBEXT)\
-    $(BUILD_DIR)/DownsamplingGAM$(DLLEXT)\
 	$(BUILD_DIR)/InvertedPendulumGAM$(LIBEXT)\
     $(BUILD_DIR)/InvertedPendulumGAM$(DLLEXT)\
     

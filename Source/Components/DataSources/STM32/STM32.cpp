@@ -44,7 +44,7 @@ STM32OutSignals::STM32OutSignals():
 }
 
 STM32InSignals::STM32InSignals():
-                        motor_StepCount(0),
+                        motor_ImpuleAmplitude(0),
                          motor_Acceleration(0),
                          motor_Direction(0u),
                          break_Control_Loop(0u),
@@ -188,7 +188,7 @@ bool STM32::GetSignalMemoryBuffer(const uint32 signalIdx, const uint32 bufferIdx
     } 
     //OUTPUT
     else if (signalIdx == 9u) {
-        signalAddress = reinterpret_cast<void *>(&tx_signals.motor_StepCount);
+        signalAddress = reinterpret_cast<void *>(&tx_signals.motor_ImpuleAmplitude);
     } else if (signalIdx == 10u) {
         signalAddress = reinterpret_cast<void *>(&tx_signals.motor_Direction);
     } else if (signalIdx == 11u) {
@@ -253,7 +253,7 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     if (ok) {
         ok = (GetNumberOfSignals() == 15u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 17 signals should be specified");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Exactly 15 signals should be specified");
         }
     }
     
@@ -317,7 +317,7 @@ bool STM32::SetConfiguredDatabase(StructuredDataI & data) {
     if (ok) {
         ok = DataSourceCheckSignalProperties(*this, 9u, SignedInteger32Bit, 0u, 1u);
         if (!ok) {
-            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal motor_StepCount");
+            REPORT_ERROR(ErrorManagement::InitialisationError, "Signal properties check failed for signal motor_ImpuleAmplitude");
         }
     }
     if (ok) {
@@ -414,10 +414,10 @@ bool STM32::RxSynchronise() {
 
 bool STM32::TxSynchronise() {
     //uint16 tx_buffer;
-     //tx_buffer = tx_signals.motor_StepCount;
+     //tx_buffer = tx_signals.motor_ImpuleAmplitude;
 
     // STM32InSignals sg;
-    // sg.motor_StepCount=1;
+    // sg.motor_ImpuleAmplitude=1;
     // sg.motor_Direction=2u;
     // sg.motor_Acceleration=3u;
     // sg.break_Control_Loop=4u;
