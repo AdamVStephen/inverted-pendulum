@@ -1,11 +1,10 @@
-# UKAEA-Sygensys
+# UKAEA-Inverted Pendulum
 
-MARTe2 evolution project shared repository
+Inverted Pendulum project shared repository
 
 ## Description
 
-This is a prototype application demonstrating the use of MARTe2 to implement an industrial control 
-application, as part of a collaborative project between UKAEA and Sygensys.
+This is a prototype application demonstrating the use of MARTe2 to implement an inverted pendulum control application.
 
 ## Build
 
@@ -40,8 +39,8 @@ Then build the UKAEA/Sygensys components. Assuming that it is located at the sam
 MARTe2 and MARTe2-components:
 
 ```
-$ cd ../UKAEA-Sygensys
-$ make -f Makefile.rpi4
+$ cd ../InvertedPendulum
+$ make -f Makefile.inc
 ```
 
 ## Run
@@ -107,56 +106,6 @@ corresponding to the ASCII characters of the message):
 [Information - LoggerBroker.cpp:152]: Buffer [0:8]:{ 97 98 99 100 101 102 103 10 0 } 
 ...
 ```
-
-### GPS example
-
-The first step, if you haven't done it already, is to configure your GPS module. Instructions on how
-to do so can be found in the `Documentation/GPS` directory of this repository.
-
-Connect your GPS module and make a note of the serial port it is connected on (e.g. `/dev/serial0`).
-Edit the example GPS configuration file `Configurations/Example-GPS.cfg` and set the `Port` of the 
-`GPS` DataSource e.g.:
-
-```
-...
-Port = "/dev/serial0"
-...
-```
-
-Then run the example GPS application. Execute the following command:
-
-```
-$ cd Startup
-$ ./Main.sh -l RealTimeLoader -f ../Configurations/Example-GPS.cfg -s State1
-...
-```
-
-After some preamble, you should see the application produce GPS signals on the console:
-
-```
-...
-[Information - LoggerBroker.cpp:152]: Counter [0:0]:12869
-[Information - LoggerBroker.cpp:152]: Time [0:0]:4279065408
-[Information - LoggerBroker.cpp:152]: ReceivedByteCount [0:0]:137305
-[Information - LoggerBroker.cpp:152]: DiscardedByteCount [0:0]:2665
-[Information - LoggerBroker.cpp:152]: ReadErrorCount [0:0]:0
-[Information - LoggerBroker.cpp:152]: ValidMessageCount [0:0]:5610
-[Information - LoggerBroker.cpp:152]: InvalidMessageCount [0:0]:45
-[Information - LoggerBroker.cpp:152]: MessageValid [0:0]:1
-[Information - LoggerBroker.cpp:152]: TimeOfWeek [0:0]:142428000
-[Information - LoggerBroker.cpp:152]: TimeOfWeekSubMS [0:0]:0
-[Information - LoggerBroker.cpp:152]: QErr [0:0]:3695
-[Information - LoggerBroker.cpp:152]: Week [0:0]:2198
-[Information - LoggerBroker.cpp:152]: Flags [0:0]:11
-[Information - LoggerBroker.cpp:152]: RefInfo [0:0]:63
-[Information - LoggerBroker.cpp:152]: Counter [0:0]:12871
-[Information - LoggerBroker.cpp:152]: Time [0:0]:4281065408
-...
-```
-
-Note that the GPS can take several minutes to start getting fixes, from a cold start. During this time,
-it will not produce `UBX-TIM-TP` messages. This will be reflected in the `MessageValid` signal, which
-will be set to zero while no messages are being received.
 
 ### STM32 example
 
