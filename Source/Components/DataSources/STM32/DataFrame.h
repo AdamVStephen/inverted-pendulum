@@ -8,7 +8,7 @@ namespace MFI {
 namespace DataFrame {
 
 extern const MARTe::uint8 SYNC_BYTES[4];
-const MARTe::uint32 RX_FRAME_SIZE = 8u + 4u; //20;
+const MARTe::uint32 RX_FRAME_SIZE = 8u + 4u; //12;
 
 /**
  * @brief Remove any leading non-message bytes from the buffer
@@ -20,14 +20,6 @@ MARTe::uint32 SanitiseRxBuffer(SerialBuffer& buffer);
 /**
  * @brief The contents of an Rx data frame
  */
-
-#pragma pack(push, 1)
-typedef struct  { 
-    MARTe::int32 positionRotor;
-    MARTe::uint32 encoder_counter;
-
-}Data_t, *Data;
-#pragma pack(pop)
 
 class RxDataFrame {
  public:    

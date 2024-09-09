@@ -102,7 +102,7 @@ typedef enum {
    motor_Direction - this is the direction of pendulum swigning
    motor_Acceleration - this is the control signal produced to control accelelaration of the pendulum
    break_Control_Loop - this is a parameter that signifies breaking of the control loop and re-initialization of the pendulum system
-   state - this communicates the current execution of the GAM
+   state - this communicates the current execution state of the GAM
    encoder_position - this is the computed encoder position
 
  * The GAM operates in four execution states: (0)INITIALIZATION, (1)PENDULUM_STABLIZATION, (2)SWING_UP, and (4)MAIN
@@ -182,24 +182,9 @@ private:
    void apply_acceleration(float * acc, float* target_velocity_prescaled, float t_sample);
    float L6474_Board_Pwm1PrescaleFreq( float freq );
 
-   /* Acceleration control system variables */
-   volatile u_int32_t apply_acc_start_time;
-   volatile u_int32_t clock_int_time;
-   volatile u_int32_t clock_int_tick;
-
-   /// PWM period variables used by step interrupt
-   volatile u_int32_t desired_pwm_period;
-   volatile u_int32_t current_pwm_period;
-
-   float target_velocity_prescaled;
-   int32_t enable_speed_prescale;
-
+   
    /* System data reporting */
    char msg_display[256];
-   //char tmp_string[256];
-   // char msg[192];
-   // char msg_pad[64];
-   // char test_msg[128];
    
      /* Control system output signal */
    float rotor_control_target_steps;
@@ -328,7 +313,6 @@ private:
 
    /* User configuration variables */
    int clear_input;
-   u_int32_t enable_control_action;
    int max_speed_read, min_speed_read;
    int select_suspended_mode;
    int motor_response_model;
@@ -438,11 +422,6 @@ private:
 
    /* System timing variables */
 
-   u_int32_t tick, tick_cycle_current, tick_cycle_previous, tick_cycle_start,
-   tick_read_cycle, tick_read_cycle_start,tick_wait_start,tick_wait;
-
-   volatile u_int32_t current_cpu_cycle, prev_cpu_cycle, last_cpu_cycle, target_cpu_cycle, prev_target_cpu_cycle;
-   volatile int current_cpu_cycle_delay_relative_report;
 
    u_int32_t t_sample_cpu_cycles;
    float Tsample, Tsample_rotor, test_time;
