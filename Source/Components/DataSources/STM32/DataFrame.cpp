@@ -55,34 +55,10 @@ namespace MFI {
             uint8 temp[RX_FRAME_SIZE] = {'\0'};
             buffer.dequeue(temp, RX_FRAME_SIZE);
             ParseRxDataFramePayload(temp + sizeof(SYNC_BYTES), dataframe);
-            //ParseRxDataFramePayload(temp, dataframe);
-
-            // Data d = (Data)temp;
             
-            // dataframe.positionRotor = d->positionRotor; 
-            // dataframe.encoder_counter =  d->encoder_counter;
-            // dataframe.Pwm1Counter =  d->Pwm1Counter;
-            // dataframe.CYCCNT =  d->CYCCNT;
-            // dataframe.OUTPUT_rotor_control_target_steps =  d->OUTPUT_rotor_control_target_steps;
-            // dataframe.OUTPUT_L6474_Board_Pwm1Period =  d->OUTPUT_L6474_Board_Pwm1Period;
-            // dataframe.OUTPUT_gpioState =  d->OUTPUT_gpioState;
-            // dataframe.OUTPUT_break_Control_Loop = d->OUTPUT_break_Control_Loop;
-            // dataframe.OUTPUT_state = d->OUTPUT_state;
-
             return true;
         }
 
-        // float bytesToFloat(uint8 b0, uint8 b1, uint8 b2, uint8 b3)
-        // {
-        //     float output;
-
-        //     *((uint8*)(&output) + 3) = b0;
-        //     *((uint8*)(&output) + 2) = b1;
-        //     *((uint8*)(&output) + 1) = b2;
-        //     *((uint8*)(&output) + 0) = b3;
-
-        //     return output;
-        // }
 
         void ParseRxDataFramePayload(uint8* raw, RxDataFrame& dataframe) {  
 
@@ -92,7 +68,6 @@ namespace MFI {
                                 (static_cast<int32>(raw[2]) << 16) +
                                 (static_cast<int32>(raw[3]) << 24);
 
-            //dataframe.positionEncoder = bytesToFloat(raw[4], raw[5], raw[6], raw[7]);
             dataframe.encoder_counter = static_cast<uint32>(raw[4]) +
                                  (static_cast<uint32>(raw[5]) << 8) +
                                  (static_cast<uint32>(raw[6]) << 16) +

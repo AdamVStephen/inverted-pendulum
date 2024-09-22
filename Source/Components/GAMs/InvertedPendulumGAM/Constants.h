@@ -1,7 +1,6 @@
 
 
 /* CMSIS */
-   #define ARM_MATH_CM4
 
    /*
    * Apply Swing Up algorithm developed by Markus Dauberschmidt
