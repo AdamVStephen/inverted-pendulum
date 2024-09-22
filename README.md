@@ -6,9 +6,22 @@ Inverted Pendulum project shared repository
 
 This is a prototype application demonstrating the use of MARTe2 to implement an inverted pendulum control application.
 
+## Test Status
+
+Tested 22/09/2024 on WSL.  Still need to test two other platforms.
+
+1. Linux x86_64
+1. Raspbery Pi 4.
+
 ## Build
 
-First, clone and build both `MARTe2` and `MARTe2-components`. For example, on a Raspberry Pi 4 system
+This assumes that yo have already cloned this repository in a working directory. If not, then
+
+```
+$ git clone https://github.com/AdamVStephen/inverted-pendulum
+```
+
+Next, clone and build both `MARTe2` and `MARTe2-components`. For example, on a Raspberry Pi 4 system
 
 ```
 $ git clone https://github.com/ukaea/MARTe2.git
@@ -39,8 +52,9 @@ Then build the UKAEA/Sygensys components. Assuming that it is located at the sam
 MARTe2 and MARTe2-components:
 
 ```
-$ cd ../InvertedPendulum
-$ make -f Makefile.inc
+$ cd ../inverted-pendulum
+# If building for x86
+$ make -f Makefile.x86_linux
 ```
 
 ## Run
