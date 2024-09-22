@@ -156,13 +156,14 @@ Then run the example STM32 MARTe application on the Pi. Execute the following co
 
 ```
 $ cd Startup
-$ ./Main.sh -l RealTimeLoader -f ../Configurations/Example-STM32-FileLogging.cfg -s State1
+$ ./Main.sh -l RealTimeLoader -f ../Configurations/EduKit_STM32_InvertedGAM_FileLogging.cfg -s State1
 ...
 ```
-
 After the preamble, no terminal output will be produced by the application. You can watch the data
 accumulating into the log file by running e.g.
 
 ```
-$ tail -f stm32-log.csv
+$ tail -f control_data_logs.csv
 ```
+
+Where the name of the log file is defined in the MARTe2 configuration file (the argument to the `-f` flag). 
