@@ -27,13 +27,13 @@ Next, clone and build both `MARTe2` and `MARTe2-components`. For example, on a R
 $ git clone https://github.com/ukaea/MARTe2.git
 $ cd MARTe2
 $ git checkout ukaea/rpi4
-$ make -f Makefile.rpi4
+$ make -f Makefile.x86-linux
 $ export MARTe2_DIR=$(pwd)
 $ cd ..
 $ git clone https://github.com/ukaea/MARTe2-components.git
 $ cd MARTe2-components
 $ git checkout ukaea/rpi4
-$ make -f Makefile.rpi4
+$ make -f Makefile.x86-linux
 $ export MARTe2_Components_DIR=$(pwd)
 ```
 
@@ -54,7 +54,7 @@ MARTe2 and MARTe2-components:
 ```
 $ cd ../inverted-pendulum
 # If building for x86
-$ make -f Makefile.x86_linux
+$ make -f Makefile.x86-linux
 ```
 
 ## Run
